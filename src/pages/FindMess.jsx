@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { MapPin, Search, Utensils, ChevronDown, SlidersHorizontal, Heart, Users, Star, Truck, ShieldCheck, ChevronRight } from 'lucide-react';
 import './FindMess.css';
 import { Link } from 'react-router-dom';
+import { getActiveMesses } from '../services/firebaseService';
 
-// Data for Messes
+// Fallback Data for Messes (if DB is empty)
 const messes = [
   {
     id: 1, name: "Aai's Kitchen", rating: 4.8, reviews: 128, location: 'Rajarampuri', subs: '120+', price: 2199, tags: ['Veg & Non-Veg', 'Free Delivery'],
@@ -37,6 +38,55 @@ const filters = ['All', 'Veg', 'Non-Veg', 'Budget Friendly', 'Premium', 'Student
 
 const FindMess = () => {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [messesData, setMessesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [locationFilter, setLocationFilter] = useState('All Locations');
+  const [foodTypeFilter, setFoodTypeFilter] = useState('All Types');
+
+  useEffect(() => {
+    const fetchMesses = async () => {
+      try {
+        const data = await getActiveMesses();
+        if (data.length > 0) {
+          setMessesData(data);
+        } else {
+          setMessesData(messes); // Fallback
+        }
+      } catch (err) {
+        console.error(err);
+        setMessesData(messes); // Fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMesses();
+  }, []);
+
+  // Filter Logic
+  const filteredMesses = messesData.filter(mess => {
+    // 1. Search Term
+    if (searchTerm && !mess.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    
+    // 2. Location
+    if (locationFilter !== 'All Locations' && mess.location !== locationFilter) return false;
+    
+    // 3. Food Type
+    if (foodTypeFilter !== 'All Types') {
+      if (foodTypeFilter === 'Pure Veg' && !mess.tags.includes('Veg')) return false;
+      if (foodTypeFilter === 'Non-Veg' && !mess.tags.includes('Non-Veg')) return false;
+    }
+    
+    // 4. Active Chip Filter
+    if (activeFilter !== 'All') {
+      if (activeFilter === 'Veg' && !mess.tags.includes('Veg')) return false;
+      if (activeFilter === 'Non-Veg' && !mess.tags.includes('Non-Veg')) return false;
+      if (activeFilter === 'Free Delivery' && !mess.tags.includes('Free Delivery')) return false;
+      if (activeFilter === 'Student Favourite' && mess.badge !== 'Student Favourite') return false;
+    }
+    
+    return true;
+  });
 
   return (
     <div className="find-mess-page">
@@ -56,11 +106,14 @@ const FindMess = () => {
               
               <div className="search-input-group location-group">
                 <MapPin size={20} className="search-icon" />
-                <select className="search-select">
+                <select className="search-select" value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+                  <option>All Locations</option>
                   <option>Rajarampuri</option>
                   <option>Tarabai Park</option>
                   <option>Shahupuri</option>
                   <option>Kolhapur MIDC</option>
+                  <option>Near SUK</option>
+                  <option>New Palace Road</option>
                 </select>
               </div>
               
@@ -68,14 +121,21 @@ const FindMess = () => {
               
               <div className="search-input-group keyword-group">
                 <Search size={20} className="search-icon" />
-                <input type="text" placeholder="Search mess name..." className="search-input" />
+                <input 
+                  type="text" 
+                  placeholder="Search mess name..." 
+                  className="search-input" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
               
               <div className="search-divider"></div>
               
               <div className="search-input-group food-type-group">
                 <Utensils size={20} className="search-icon" />
-                <select className="search-select">
+                <select className="search-select" value={foodTypeFilter} onChange={(e) => setFoodTypeFilter(e.target.value)}>
+                  <option>All Types</option>
                   <option>Veg & Non-Veg</option>
                   <option>Pure Veg</option>
                   <option>Non-Veg</option>
@@ -148,12 +208,14 @@ const FindMess = () => {
             </div>
             
             <div className="fm-mess-grid">
-              {messes.map(mess => (
+              {loading ? <p>Loading messes...</p> : filteredMesses.length === 0 ? (
+                <div className="col-span-2 py-10 text-center text-gray-500">No mess providers found matching your criteria.</div>
+              ) : filteredMesses.map(mess => (
                 <div key={mess.id} className="mess-card">
                   <div className="mess-img-wrapper">
                     <img src={mess.img} alt={mess.name} className="mess-img" />
                     {mess.badge && (
-                      <span className={`mess-badge bg-${mess.badgeColor}`}>{mess.badge}</span>
+                      <span className={`mess-badge bg-${mess.badgeColor || 'orange'}`}>{mess.badge}</span>
                     )}
                     <button className="mess-heart"><Heart size={20} /></button>
                   </div>
@@ -179,14 +241,14 @@ const FindMess = () => {
                     </div>
                     
                     <div className="mess-tags">
-                      {mess.tags.map(tag => (
+                      {mess.tags && mess.tags.map(tag => (
                         <span key={tag} className={tag.includes('Veg') ? 'tag-green' : 'tag-orange'}>{tag}</span>
                       ))}
                     </div>
                     
                     <div className="mess-actions">
                       <button className="btn-outline">View Details</button>
-                      <button className="btn-maroon">Subscribe Now</button>
+                      <Link to="/checkout" className="btn-maroon inline-flex items-center justify-center px-4 py-2 font-medium">Subscribe Now</Link>
                     </div>
                   </div>
                 </div>
