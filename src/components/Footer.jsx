@@ -1,10 +1,11 @@
 import React from 'react';
 import { Camera, Globe, MessageCircle, Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
   return (
-    <footer id="partner" className="footer">
+    <footer className="footer">
       <div className="container">
         <div className="footer-grid">
           <div className="footer-col brand-col">
@@ -23,7 +24,7 @@ const Footer = () => {
               <li><a href="#">About Us</a></li>
               <li><a href="#">Contact</a></li>
               <li><a href="#">Careers</a></li>
-              <li><a href="#">Partner With Us</a></li>
+              <li><a href="/become-partner">Partner With Us</a></li>
             </ul>
           </div>
           

@@ -45,7 +45,7 @@ const FindMess = () => {
       <section className="fm-hero-section">
         <div className="container">
           <div className="fm-breadcrumb">
-            <Link to="/">Home</Link> <ChevronRight size={14} /> <span>Find Mess</span>
+            <Link to="/" tabIndex={1}>Home</Link> <ChevronRight size={14} /> <span>Find Mess</span>
           </div>
           
           <h1 className="fm-title">Find Your <span className="text-maroon">Perfect Daily Meal</span></h1>
@@ -56,7 +56,7 @@ const FindMess = () => {
               
               <div className="search-input-group location-group">
                 <MapPin size={20} className="search-icon" />
-                <select className="search-select">
+                <select className="search-select" tabIndex={2}>
                   <option>Rajarampuri</option>
                   <option>Tarabai Park</option>
                   <option>Shahupuri</option>
@@ -68,21 +68,21 @@ const FindMess = () => {
               
               <div className="search-input-group keyword-group">
                 <Search size={20} className="search-icon" />
-                <input type="text" placeholder="Search mess name..." className="search-input" />
+                <input type="text" placeholder="Search mess name..." className="search-input" tabIndex={3} />
               </div>
               
               <div className="search-divider"></div>
               
               <div className="search-input-group food-type-group">
                 <Utensils size={20} className="search-icon" />
-                <select className="search-select">
+                <select className="search-select" tabIndex={4}>
                   <option>Veg & Non-Veg</option>
                   <option>Pure Veg</option>
                   <option>Non-Veg</option>
                 </select>
               </div>
               
-              <button className="search-btn">Search</button>
+              <button className="search-btn" tabIndex={5}>Search</button>
             </div>
           </div>
           
@@ -113,17 +113,18 @@ const FindMess = () => {
       <section className="fm-filters-section">
         <div className="container fm-filters-container">
           <div className="fm-chips">
-            {filters.map(f => (
+            {filters.map((f, i) => (
               <button 
                 key={f} 
                 className={`fm-chip ${activeFilter === f ? 'active' : ''}`}
                 onClick={() => setActiveFilter(f)}
+                tabIndex={6 + i}
               >
                 {f}
               </button>
             ))}
           </div>
-          <button className="fm-more-filters">
+          <button className="fm-more-filters" tabIndex={20}>
             <SlidersHorizontal size={16} /> More Filters
           </button>
         </div>
@@ -139,7 +140,7 @@ const FindMess = () => {
               <h2>Top Rated Messes Near You</h2>
               <div className="fm-sort">
                 Sort by: 
-                <select className="fm-sort-select">
+                <select className="fm-sort-select" tabIndex={21}>
                   <option>Most Popular</option>
                   <option>Highest Rated</option>
                   <option>Price: Low to High</option>
@@ -148,14 +149,14 @@ const FindMess = () => {
             </div>
             
             <div className="fm-mess-grid">
-              {messes.map(mess => (
+              {messes.map((mess, i) => (
                 <div key={mess.id} className="mess-card">
                   <div className="mess-img-wrapper">
                     <img src={mess.img} alt={mess.name} className="mess-img" />
                     {mess.badge && (
                       <span className={`mess-badge bg-${mess.badgeColor}`}>{mess.badge}</span>
                     )}
-                    <button className="mess-heart"><Heart size={20} /></button>
+                    <button className="mess-heart" tabIndex={22 + (i * 3)}><Heart size={20} /></button>
                   </div>
                   
                   <div className="mess-card-body">
@@ -185,8 +186,8 @@ const FindMess = () => {
                     </div>
                     
                     <div className="mess-actions">
-                      <button className="btn-outline">View Details</button>
-                      <button className="btn-maroon">Subscribe Now</button>
+                      <button className="btn-outline" tabIndex={23 + (i * 3)}>View Details</button>
+                      <button className="btn-maroon" tabIndex={24 + (i * 3)}>Subscribe Now</button>
                     </div>
                   </div>
                 </div>
@@ -194,7 +195,7 @@ const FindMess = () => {
             </div>
             
             <div className="fm-load-more">
-              <button className="btn-outline">Load More Messes <ChevronDown size={18} /></button>
+              <button className="btn-outline" tabIndex={100}>Load More Messes <ChevronDown size={18} /></button>
             </div>
           </div>
           
@@ -236,7 +237,7 @@ const FindMess = () => {
                 </div>
               </div>
               
-              <button className="btn-orange w-full menu-btn">View Full Menu <ChevronRight size={18} /></button>
+              <button className="btn-orange w-full menu-btn" tabIndex={101}>View Full Menu <ChevronRight size={18} /></button>
             </div>
             
             {/* Why Choose Us */}
@@ -272,7 +273,7 @@ const FindMess = () => {
                   </div>
                 </li>
               </ul>
-              <div className="why-link"><a href="#">Learn more about us <ChevronRight size={14} /></a></div>
+              <div className="why-link"><a href="#" tabIndex={102}>Learn more about us <ChevronRight size={14} /></a></div>
             </div>
             
           </div>
@@ -287,8 +288,8 @@ const FindMess = () => {
               <h2>Ready to start your healthy meal journey?</h2>
               <p>Subscribe to your favorite mess and enjoy homemade meals every day.</p>
               <div className="fm-cta-buttons">
-                <button className="btn-maroon">Find Your Mess</button>
-                <button className="btn-outline-white">View Plans</button>
+                <button className="btn-maroon" tabIndex={103}>Find Your Mess</button>
+                <button className="btn-outline-white" tabIndex={104}>View Plans</button>
               </div>
             </div>
             <img src="https://images.unsplash.com/photo-1626776876729-abcb4995eb87?auto=format&fit=crop&w=400&q=80" alt="Thali" className="fm-cta-img" />

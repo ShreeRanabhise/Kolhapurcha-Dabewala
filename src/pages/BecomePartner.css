@@ -1,0 +1,847 @@
+/* BecomePartner.css */
+
+.become-partner-page {
+  background-color: var(--color-off-white);
+  padding-top: 80px;
+  font-family: var(--font-family);
+  color: var(--color-gray-900);
+}
+
+/* Specific Page Colors */
+.bp-maroon { color: #7A1F1F; }
+.bp-bg-maroon { background-color: #7A1F1F; }
+.bp-orange { color: #FF7A00; }
+.bp-bg-orange { background-color: #FF7A00; }
+.bp-bg-cream { background-color: #FFF8F0; }
+.bp-green { color: #2E8B57; }
+.bp-gold { color: #F4B400; }
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 3rem;
+  letter-spacing: -0.5px;
+}
+
+/* Floating WhatsApp Button */
+.floating-whatsapp {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background-color: #25D366;
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+  z-index: 100;
+  transition: transform 0.3s;
+}
+.floating-whatsapp:hover {
+  transform: scale(1.1);
+}
+
+/* 1. Hero Section */
+.bp-hero {
+  background: linear-gradient(135deg, #FFF8F0 0%, #FFFFFF 100%);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.bp-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.bp-badge {
+  display: inline-block;
+  background: rgba(122, 31, 31, 0.1);
+  color: #7A1F1F;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.bp-hero-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: #111827;
+}
+
+.bp-hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-gray-600);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+
+.bp-hero-cta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.btn-bp-primary {
+  background-color: #7A1F1F;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.3s;
+}
+.btn-bp-primary:hover {
+  background-color: #4A0B12;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(122, 31, 31, 0.2);
+}
+
+.btn-bp-secondary {
+  background-color: white;
+  color: #111827;
+  border: 2px solid #E5E7EB;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.3s;
+}
+.btn-bp-secondary:hover {
+  border-color: #111827;
+}
+
+.bp-hero-trust {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.bp-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+.bp-trust-item svg {
+  color: #2E8B57;
+}
+
+.bp-hero-img-container {
+  position: relative;
+}
+
+.bp-hero-img {
+  width: 100%;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 2;
+}
+
+.bp-glass-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bp-glass-1 {
+  bottom: 20px;
+  left: -30px;
+}
+.bp-glass-2 {
+  top: 40px;
+  right: -20px;
+}
+
+.glass-icon {
+  background: #FFF8F0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF7A00;
+}
+.glass-text strong {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.glass-text span {
+  font-size: 0.8rem;
+  color: var(--color-gray-500);
+  font-weight: 600;
+}
+
+/* 2. Why Join Us */
+.bp-why-join {
+  padding: 6rem 0;
+  background: white;
+}
+
+.bp-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.bp-card {
+  background: #FAFAFA;
+  border: 1px solid #F3F4F6;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  transition: all 0.3s;
+}
+.bp-card:hover {
+  background: white;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+  transform: translateY(-5px);
+  border-color: #E5E7EB;
+}
+
+.bp-card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: #FFF8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #FF7A00;
+  margin-bottom: 1.5rem;
+}
+
+.bp-card h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.bp-card p {
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+/* 3. How It Works */
+.bp-timeline-section {
+  padding: 6rem 0;
+  background: var(--color-off-white);
+}
+
+.bp-timeline {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.bp-timeline::before {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 50px;
+  right: 50px;
+  height: 4px;
+  background: #E5E7EB;
+  z-index: 1;
+}
+
+.bp-step {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex: 1;
+  padding: 0 1rem;
+}
+
+.bp-step-num {
+  width: 64px;
+  height: 64px;
+  background: white;
+  border: 4px solid #E5E7EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 auto 1.5rem;
+  color: var(--color-gray-400);
+  transition: all 0.3s;
+}
+
+.bp-step:hover .bp-step-num {
+  border-color: #7A1F1F;
+  color: #7A1F1F;
+}
+
+.bp-step h4 {
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.bp-step p {
+  font-size: 0.85rem;
+  color: var(--color-gray-600);
+}
+
+/* 4. Business Benefits */
+.bp-comparison {
+  padding: 6rem 0;
+  background: white;
+}
+
+.bp-comp-container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.bp-comp-box {
+  border-radius: 24px;
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.bp-comp-bad {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+}
+.bp-comp-good {
+  background: #7A1F1F;
+  color: white;
+  box-shadow: 0 20px 40px rgba(122, 31, 31, 0.2);
+}
+
+.bp-comp-box h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+}
+
+.bp-comp-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.bp-comp-list li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.bp-comp-bad li { color: var(--color-gray-600); }
+.bp-comp-good li { color: white; }
+
+/* 5. Earnings Calculator */
+.bp-calculator {
+  padding: 6rem 0;
+  background: #FFF8F0;
+}
+
+.bp-calc-box {
+  background: white;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.bp-calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.bp-input-group {
+  margin-bottom: 1.5rem;
+}
+
+.bp-input-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--color-gray-700);
+}
+
+.bp-range-slider {
+  width: 100%;
+  accent-color: #FF7A00;
+  height: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.bp-range-val {
+  font-weight: 800;
+  color: #7A1F1F;
+  font-size: 1.2rem;
+  float: right;
+}
+
+.bp-calc-result {
+  background: #7A1F1F;
+  border-radius: 16px;
+  padding: 2.5rem;
+  color: white;
+  text-align: center;
+}
+
+.bp-result-title {
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.bp-result-amount {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+  color: #FF7A00;
+}
+
+.bp-calc-result hr {
+  border-color: rgba(255,255,255,0.1);
+  margin-bottom: 1.5rem;
+}
+
+/* 6. Success Stories */
+.bp-stories {
+  padding: 6rem 0;
+  background: white;
+}
+
+.bp-story-card {
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.bp-story-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bp-story-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.bp-story-info h4 { font-weight: 800; font-size: 1.1rem; }
+.bp-story-info p { font-size: 0.85rem; color: var(--color-gray-500); }
+
+.bp-story-stats {
+  display: flex;
+  gap: 1.5rem;
+  background: #FFF8F0;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.bp-stat-item strong {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #FF7A00;
+}
+.bp-stat-item span {
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  font-weight: 600;
+}
+
+/* 7. Who Can Join */
+.bp-who {
+  padding: 6rem 0;
+  background: var(--color-off-white);
+}
+
+.bp-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.5rem;
+}
+
+.bp-who-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem 1rem;
+  text-align: center;
+  border: 1px solid #E5E7EB;
+  transition: all 0.3s;
+}
+
+.bp-who-card:hover {
+  border-color: #FF7A00;
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(255, 122, 0, 0.1);
+}
+
+.bp-who-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.bp-who-card h4 {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* 8. Partner Plans */
+.bp-plans {
+  padding: 6rem 0;
+  background: white;
+}
+
+.bp-plan-card {
+  border: 1px solid #E5E7EB;
+  border-radius: 24px;
+  padding: 2.5rem;
+  background: white;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.bp-plan-popular {
+  border: 2px solid #7A1F1F;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  z-index: 2;
+}
+
+.bp-popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #7A1F1F;
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.bp-plan-card h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+.bp-plan-price {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 1.5rem;
+}
+.bp-plan-price span {
+  font-size: 1rem;
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+
+.bp-plan-features {
+  list-style: none;
+  margin-bottom: 2.5rem;
+}
+.bp-plan-features li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #F3F4F6;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bp-plan-features li svg { color: #2E8B57; }
+
+.bp-plan-btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  border: 2px solid #E5E7EB;
+  background: white;
+  color: #111827;
+  transition: all 0.3s;
+}
+.bp-plan-btn:hover { border-color: #111827; }
+
+.bp-plan-popular .bp-plan-btn {
+  background: #7A1F1F;
+  color: white;
+  border-color: #7A1F1F;
+}
+.bp-plan-popular .bp-plan-btn:hover { background: #4A0B12; }
+
+/* 9. Registration Form */
+.bp-registration {
+  padding: 6rem 0;
+  background: #FFF8F0;
+}
+
+.bp-form-container {
+  max-width: 700px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 24px;
+  padding: 3rem;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+}
+
+.bp-form-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+  position: relative;
+}
+.bp-form-steps::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: #E5E7EB;
+  z-index: 1;
+}
+
+.bp-step-indicator {
+  position: relative;
+  z-index: 2;
+  background: white;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #E5E7EB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-gray-400);
+}
+.bp-step-indicator.active {
+  border-color: #FF7A00;
+  color: #FF7A00;
+}
+.bp-step-indicator.completed {
+  background: #2E8B57;
+  border-color: #2E8B57;
+  color: white;
+}
+
+.bp-form-group {
+  margin-bottom: 1.5rem;
+}
+.bp-form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-gray-700);
+}
+.bp-form-input, .bp-form-select {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.bp-form-input:focus, .bp-form-select:focus {
+  border-color: #FF7A00;
+}
+
+.bp-form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+.bp-btn-prev {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #E5E7EB;
+  background: white;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.bp-btn-next {
+  padding: 0.75rem 1.5rem;
+  background: #7A1F1F;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* 10. Dashboard Preview */
+.bp-dashboard {
+  padding: 6rem 0;
+  background: white;
+}
+.bp-mockup {
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+}
+.bp-mockup img {
+  width: 100%;
+  display: block;
+}
+
+/* 11. Trust Section */
+.bp-trust-section {
+  padding: 4rem 0;
+  background: #111827;
+  color: white;
+}
+.bp-trust-grid {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.bp-trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+.bp-trust-badge svg {
+  color: #2E8B57;
+  width: 48px;
+  height: 48px;
+}
+.bp-trust-badge span {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* 12. FAQ Section */
+.bp-faq {
+  padding: 6rem 0;
+  background: var(--color-off-white);
+}
+.bp-faq-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.bp-faq-item {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.bp-faq-question {
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: left;
+}
+.bp-faq-answer {
+  padding: 0 1.5rem 1.5rem;
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+/* 13. Final CTA */
+.bp-final-cta {
+  padding: 6rem 0;
+  background: linear-gradient(135deg, #7A1F1F 0%, #FF7A00 100%);
+  color: white;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.bp-final-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.bp-final-cta h2 {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+}
+.bp-final-cta p {
+  font-size: 1.25rem;
+  margin-bottom: 3rem;
+  opacity: 0.9;
+}
+.bp-btn-white {
+  background: white;
+  color: #7A1F1F;
+  padding: 1.25rem 2.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  transition: transform 0.3s;
+}
+.bp-btn-white:hover {
+  transform: translateY(-3px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .bp-hero-grid, .bp-comp-container, .bp-calc-grid {
+    grid-template-columns: 1fr;
+  }
+  .bp-hero-img-container { order: -1; }
+  .bp-hero-title { font-size: 2.5rem; }
+  .bp-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .bp-timeline { flex-direction: column; gap: 3rem; }
+  .bp-timeline::before { display: none; }
+  .bp-step-num { margin: 0 auto 1rem; }
+  .bp-grid-6 { grid-template-columns: repeat(3, 1fr); }
+  .bp-plan-popular { transform: none; }
+}
+
+@media (max-width: 768px) {
+  .bp-grid-3 { grid-template-columns: 1fr; }
+  .bp-grid-6 { grid-template-columns: repeat(2, 1fr); }
+  .bp-hero-cta { flex-direction: column; }
+  .bp-hero-trust { grid-template-columns: 1fr; }
+  .bp-trust-grid { flex-direction: column; gap: 3rem; }
+  .bp-final-cta h2 { font-size: 2rem; }
+}

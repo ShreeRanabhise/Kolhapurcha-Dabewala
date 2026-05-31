@@ -23,11 +23,11 @@ const Header = () => {
         </Link>
 
         <nav className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
-          <Link to="/">Home</Link>
-          <Link to="/find-mess">Find Mess</Link>
-          <a href="/#plans">Subscription Plans</a>
-          <a href="/#how-it-works">How It Works</a>
-          <a href="/#partner" className="text-secondary font-bold">Become a Partner</a>
+          <Link to="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+          <Link to="/find-mess" onClick={() => setMobileMenuOpen(false)}>Find Mess</Link>
+          <a href="/#plans" onClick={() => setMobileMenuOpen(false)}>Subscription Plans</a>
+          <a href="/#how-it-works" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+          <a href="/become-partner" className="text-secondary font-bold" onClick={() => setMobileMenuOpen(false)}>Become a Partner</a>
         </nav>
 
         <div className="auth-buttons">
