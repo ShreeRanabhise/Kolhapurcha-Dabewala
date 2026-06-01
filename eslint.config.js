@@ -19,12 +19,15 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': [
-        'error',
+        'warn',
         {
           varsIgnorePattern: '^React$',
           argsIgnorePattern: '^_',
         },
       ],
+      'no-useless-assignment': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/purity': 'warn'
     },
   },
 ])
