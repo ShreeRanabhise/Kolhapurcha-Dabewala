@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Users, Store, ShieldAlert, Award, 
   CheckCircle, XCircle, FileText, Send, AlertTriangle, 
-  MapPin, HelpCircle, UserCheck, DollarSign, RefreshCw, Settings
+  MapPin, HelpCircle, UserCheck, DollarSign, RefreshCw, Settings,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -32,23 +33,53 @@ const AdminDashboard = () => {
     }
   }, [navigate]);
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'approvals', 'disputes', 'pricing'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'approvals', 'disputes', 'pricing', 'vendors'
   const [applications, setApplications] = useState(() => {
     const localApps = localStorage.getItem('pendingVendorApplications')
-      ? JSON.parse(localStorage.getItem('pendingVendorApplications'))
+      ? JSON.parse(localStorage.getItem('pendingVendorApplications')).filter(app => app.id !== 401 && app.id !== 402)
       : [];
-    const defaults = INITIAL_APPLICATIONS.map(app => ({
-      ...app,
-      plan: app.id === 401 ? "Growth Plan (₹999/mo)" : "Starter Plan (₹499/mo)"
-    }));
-    return [...localApps, ...defaults];
+    return localApps;
   });
   const [disputes, setDisputes] = useState(INITIAL_DISPUTES);
-  
+
+  const [vendors, setVendors] = useState(() => {
+    const saved = localStorage.getItem('approvedVendors');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved).filter(v => v.id > 6);
+        localStorage.setItem('approvedVendors', JSON.stringify(parsed));
+        return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    localStorage.setItem('approvedVendors', JSON.stringify([]));
+    return [];
+  });
+
+  const [usersList, setUsersList] = useState(() => {
+    const saved = localStorage.getItem('userAccounts');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    // Seed initial mock users if none exist
+    const mockUsers = [
+      { username: 'rahul_patil', email: 'rahul.patil@gmail.com', phone: '9822123456', registeredAt: '2026-05-30T10:12:00.000Z' },
+      { username: 'sneha_k', email: 'sneha.kulkarni@yahoo.com', phone: '9011234567', registeredAt: '2026-05-31T09:45:00.000Z' },
+      { username: 'amit_sharma', email: 'amit.sharma@outlook.com', phone: '9158345678', registeredAt: '2026-06-01T04:20:00.000Z' }
+    ];
+    localStorage.setItem('userAccounts', JSON.stringify(mockUsers));
+    return mockUsers;
+  });
+
   // Platform global counts
   const [totalRevenue, setTotalRevenue] = useState(345200);
   const [totalSubscribers, setTotalSubscribers] = useState(1240);
-  const [activeVendors, setActiveVendors] = useState(52);
+  const [activeVendors, setActiveVendors] = useState(() => vendors.length);
 
   // Global platform pricing rate states
   const [dailyRate, setDailyRate] = useState(() => {
@@ -59,6 +90,17 @@ const AdminDashboard = () => {
   });
   const [isSavingRates, setIsSavingRates] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+
+
+  const handleDeleteUser = (phone) => {
+    if (window.confirm("Are you sure you want to delete this user registration permanently?")) {
+      const updated = usersList.filter(u => u.phone !== phone);
+      setUsersList(updated);
+      localStorage.setItem('userAccounts', JSON.stringify(updated));
+      alert("User registration deleted successfully.");
+    }
+  };
 
   const handleSaveRates = (e) => {
     e.preventDefault();
@@ -91,6 +133,7 @@ const AdminDashboard = () => {
       const newApprovedVendor = {
         id: targetApp.id,
         name: targetApp.messName,
+        ownerName: targetApp.ownerName,
         area: targetApp.area,
         price: targetApp.price || 2100,
         rating: 4.8,
@@ -103,15 +146,19 @@ const AdminDashboard = () => {
         isPopular: false,
         isPremium: isGrowthPlan,
         selectedPlan: targetApp.plan,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+        description: targetApp.description || "Authentic home-style food prepared fresh daily with local ingredients.",
+        nearArea: targetApp.nearArea || "Near College",
+        image: targetApp.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
         coords: { top: `${30 + Math.random() * 40}%`, left: `${20 + Math.random() * 60}%` }
       };
 
       const existingApproved = localStorage.getItem('approvedVendors')
         ? JSON.parse(localStorage.getItem('approvedVendors'))
         : [];
-
-      localStorage.setItem('approvedVendors', JSON.stringify([...existingApproved, newApprovedVendor]));
+      const updatedApproved = [...existingApproved, { ...newApprovedVendor, status: "Active" }];
+      localStorage.setItem('approvedVendors', JSON.stringify(updatedApproved));
+      setVendors(updatedApproved);
+      setActiveVendors(updatedApproved.length);
 
       if (isGrowthPlan) {
         alert(`Growth Plan Partner Approved! "${targetApp.messName}" is now active and listed in the Featured Mess section with a Premium badge.`);
@@ -121,6 +168,29 @@ const AdminDashboard = () => {
     } else {
       alert("Vendor onboarding request rejected.");
     }
+  };
+
+  const handleDeleteVendor = (id) => {
+    if (window.confirm("Are you sure you want to delete/remove this vendor permanently from the marketplace?")) {
+      const updated = vendors.filter(v => v.id !== id);
+      setVendors(updated);
+      localStorage.setItem('approvedVendors', JSON.stringify(updated));
+      setActiveVendors(updated.length);
+      alert("Vendor deleted successfully.");
+    }
+  };
+
+  const handleToggleHoldVendor = (id) => {
+    const updated = vendors.map(v => {
+      if (v.id === id) {
+        const newStatus = v.status === "On Hold" ? "Active" : "On Hold";
+        alert(`Vendor status changed to: ${newStatus}`);
+        return { ...v, status: newStatus };
+      }
+      return v;
+    });
+    setVendors(updated);
+    localStorage.setItem('approvedVendors', JSON.stringify(updated));
   };
 
   // Handle dispute ticket resolution
@@ -167,6 +237,19 @@ const AdminDashboard = () => {
             >
               <UserCheck size={18} /> Partner Onboarding
             </button>
+            <button 
+              className={`db-tab-btn ${activeTab === 'vendors' ? 'active' : ''}`}
+              onClick={() => setActiveTab('vendors')}
+            >
+              <Store size={18} /> Manage Vendors
+            </button>
+            <button 
+              className={`db-tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+              onClick={() => setActiveTab('users')}
+            >
+              <Users size={18} /> User Registrations
+            </button>
+
             <button 
               className={`db-tab-btn ${activeTab === 'disputes' ? 'active' : ''}`}
               onClick={() => setActiveTab('disputes')}
@@ -281,46 +364,167 @@ const AdminDashboard = () => {
                     </div>
                   ) : (
                     applications.map((app) => (
-                      <div key={app.id} className="approval-card-item">
-                        <div className="app-meta">
-                          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                            <div className="badge-area"><MapPin size={12} /> {app.area}</div>
-                            <div className="badge-plan" style={{ fontSize: '0.75rem', fontWeight: '700', padding: '2px 8px', borderRadius: '4px', background: app.plan?.includes('999') ? 'rgba(255, 107, 0, 0.1)' : 'rgba(0,0,0,0.05)', color: app.plan?.includes('999') ? 'var(--color-orange)' : '#666' }}>
-                              ⚡ {app.plan || "Starter Plan"}
+                      <div key={app.id} className="approval-card-item" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        {/* Top row with meta and image */}
+                        <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+                          <div style={{ flex: 1 }}>
+                            <div className="app-meta">
+                              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                                <div className="badge-area"><MapPin size={12} /> {app.area}</div>
+                                <div className="badge-plan" style={{ fontSize: '0.75rem', fontWeight: '700', padding: '2px 8px', borderRadius: '4px', background: app.plan?.includes('999') ? 'rgba(255, 107, 0, 0.1)' : 'rgba(0,0,0,0.05)', color: app.plan?.includes('999') ? 'var(--color-orange)' : '#666' }}>
+                                  ⚡ {app.plan || "Starter Plan"}
+                                </div>
+                              </div>
+                              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: '850' }}>{app.messName}</h3>
+                              <p style={{ margin: 0, color: 'var(--color-gray-500)', fontSize: '0.9rem' }}>Owner: <strong>{app.ownerName}</strong> | FSSAI: <code>{app.fssai}</code></p>
+                              {app.description && <p style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.85rem', color: '#888' }}>"{app.description}"</p>}
                             </div>
                           </div>
-                          <h3>{app.messName}</h3>
-                          <p>Owner: <strong>{app.ownerName}</strong> | FSSAI: <code>{app.fssai}</code></p>
+                          {app.image && (
+                            <div className="approval-app-image-wrap" style={{ flexShrink: 0, marginTop: '0.5rem' }}>
+                              <img 
+                                src={app.image} 
+                                alt="Kitchen Upload" 
+                                style={{ width: '120px', height: '90px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} 
+                              />
+                            </div>
+                          )}
                         </div>
                         
-                        <div className="app-documents" style={{ display: 'flex', gap: '1rem', margin: '1rem 0' }}>
-                          <button className="doc-link-btn" style={{ display:'inline-flex', alignItems:'center', gap:'0.4rem', background:'#F8F9FA', border:'1px solid #DDD', borderRadius:'6px', padding:'0.4rem 0.8rem', fontSize:'0.8rem', cursor:'pointer' }}>
-                            <FileText size={14} /> FSSAI Certificate.pdf
-                          </button>
-                          <button className="doc-link-btn" style={{ display:'inline-flex', alignItems:'center', gap:'0.4rem', background:'#F8F9FA', border:'1px solid #DDD', borderRadius:'6px', padding:'0.4rem 0.8rem', fontSize:'0.8rem', cursor:'pointer' }}>
-                            <FileText size={14} /> Kitchen_Inspection.jpg
-                          </button>
-                        </div>
+                        {/* Footer row with documents and action buttons */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', borderTop: '1px solid #EEE', paddingTop: '1rem', flexWrap: 'wrap', gap: '1rem', width: '100%' }}>
+                          <div className="app-documents" style={{ display: 'flex', gap: '1rem' }}>
+                            <button className="doc-link-btn" style={{ display:'inline-flex', alignItems:'center', gap:'0.4rem', background:'#F8F9FA', border:'1px solid #DDD', borderRadius:'6px', padding:'0.4rem 0.8rem', fontSize:'0.8rem', cursor:'pointer' }}>
+                              <FileText size={14} /> FSSAI Certificate.pdf
+                            </button>
+                            <button className="doc-link-btn" style={{ display:'inline-flex', alignItems:'center', gap:'0.4rem', background:'#F8F9FA', border:'1px solid #DDD', borderRadius:'6px', padding:'0.4rem 0.8rem', fontSize:'0.8rem', cursor:'pointer' }}>
+                              <FileText size={14} /> Kitchen_Inspection.jpg
+                            </button>
+                          </div>
 
-                        <div className="app-actions" style={{ display:'flex', gap:'1rem', justifyContent:'flex-end' }}>
-                          <button 
-                            onClick={() => handleApprovePartner(app.id, false)}
-                            className="btn btn-outline" 
-                            style={{ padding:'0.5rem 1.25rem', border:'1px solid #C62828', color:'#C62828', fontSize:'0.85rem' }}
-                          >
-                            <XCircle size={16} /> Reject Application
-                          </button>
-                          <button 
-                            onClick={() => handleApprovePartner(app.id, true)}
-                            className="btn btn-primary" 
-                            style={{ padding:'0.5rem 1.25rem', background:'#2E7D32', border:'none', fontSize:'0.85rem' }}
-                          >
-                            <CheckCircle size={16} /> Verify & Approve Partner
-                          </button>
+                          <div className="app-actions" style={{ display:'flex', gap:'1rem' }}>
+                            <button 
+                              onClick={() => handleApprovePartner(app.id, false)}
+                              className="btn btn-outline" 
+                              style={{ padding:'0.5rem 1.25rem', border:'1px solid #C62828', color:'#C62828', fontSize:'0.85rem' }}
+                            >
+                              <XCircle size={16} /> Reject Application
+                            </button>
+                            <button 
+                              onClick={() => handleApprovePartner(app.id, true)}
+                              className="btn btn-primary" 
+                              style={{ padding:'0.5rem 1.25rem', background:'#2E7D32', border:'none', fontSize:'0.85rem' }}
+                            >
+                              <CheckCircle size={16} /> Verify & Approve Partner
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))
                   )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB 5: MANAGE VENDORS */}
+            {activeTab === 'vendors' && (
+              <motion.div
+                key="vendors"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="db-panel-card"
+              >
+                <h2>Manage Marketplace Vendors</h2>
+                <p>View active messes, put partners on hold/suspend them, or remove them permanently from the directory listings.</p>
+
+                <div className="vendors-management-table-wrapper" style={{ overflowX: 'auto', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '12px', background: 'white', marginTop: '1.5rem' }}>
+                  <table className="db-custom-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr>
+                        <th>Mess Info</th>
+                        <th>Location</th>
+                        <th>Base Price</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                        <th style={{ textAlign: 'right' }}>Actions Control</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendors.map((v) => (
+                        <tr key={v.id}>
+                          <td>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                              <img src={v.image} alt={v.name} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+                              <div>
+                                <h4 style={{ margin: 0, fontWeight: '800' }}>{v.name || v.messName}</h4>
+                                {v.isPremium && <span style={{ fontSize: '0.65rem', fontWeight: '800', color: '#B25E00', background: '#FFF3D6', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '2px' }}>👑 PREMIUM</span>}
+                              </div>
+                            </div>
+                          </td>
+                          <td><MapPin size={12} style={{ display: 'inline', marginRight: '4px' }} /> {v.area}</td>
+                          <td><strong>₹{v.price}</strong></td>
+                          <td>⭐ {v.rating || 4.7}</td>
+                          <td>
+                            <span 
+                              className={`tag ${v.status === 'On Hold' ? 'nonveg' : 'veg'}`} 
+                              style={{ 
+                                padding: '4px 10px', 
+                                borderRadius: '20px', 
+                                fontSize: '0.75rem', 
+                                fontWeight: '800', 
+                                background: v.status === 'On Hold' ? '#FEF2F2' : '#ECFDF5', 
+                                color: v.status === 'On Hold' ? '#DC2626' : '#10B981' 
+                              }}
+                            >
+                              {v.status === 'On Hold' ? '⏸ On Hold' : '✓ Active'}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => handleToggleHoldVendor(v.id)}
+                                className="btn-status-hold"
+                                style={{
+                                  padding: '0.4rem 0.8rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '700',
+                                  borderRadius: '6px',
+                                  border: '1.5px solid #DDD',
+                                  background: 'white',
+                                  cursor: 'pointer',
+                                  color: '#333',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                {v.status === 'On Hold' ? '▶ Resume' : '⏸ Put Hold'}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteVendor(v.id)}
+                                className="btn-status-delete"
+                                style={{
+                                  padding: '0.4rem 0.8rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '700',
+                                  borderRadius: '6px',
+                                  border: '1.5px solid #FEE2E2',
+                                  background: '#FEF2F2',
+                                  cursor: 'pointer',
+                                  color: '#DC2626',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                <Trash2 size={12} /> Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </motion.div>
             )}
@@ -479,6 +683,83 @@ const AdminDashboard = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* TAB 5: USER REGISTRATIONS */}
+            {activeTab === 'users' && (
+              <motion.div
+                key="users"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="db-panel-card"
+              >
+                <h2>User Registrations Database</h2>
+                <p>View and manage all registered customer accounts who have signed up on the platform.</p>
+
+                <div className="vendors-management-table-wrapper" style={{ overflowX: 'auto', border: '1px solid rgba(0,0,0,0.05)', borderRadius: '12px', background: 'white', marginTop: '1.5rem' }}>
+                  <table className="db-custom-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email Address</th>
+                        <th>Phone Number</th>
+                        <th>Registered Date</th>
+                        <th style={{ textAlign: 'right' }}>Actions Control</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usersList.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                            No users registered yet on the platform.
+                          </td>
+                        </tr>
+                      ) : (
+                        usersList.map((u, index) => (
+                          <tr key={u.phone || index}>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#FFF0E6', color: '#FF6B00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '0.85rem' }}>
+                                  {u.username?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                                <span style={{ fontWeight: '800', color: '#333' }}>{u.username}</span>
+                              </div>
+                            </td>
+                            <td>{u.email}</td>
+                            <td><strong>{u.phone}</strong></td>
+                            <td>{new Date(u.registeredAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                            <td style={{ textAlign: 'right' }}>
+                              <button
+                                onClick={() => handleDeleteUser(u.phone)}
+                                className="btn-status-delete"
+                                style={{
+                                  padding: '0.4rem 0.8rem',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '700',
+                                  borderRadius: '6px',
+                                  border: '1.5px solid #FEE2E2',
+                                  background: '#FEF2F2',
+                                  cursor: 'pointer',
+                                  color: '#DC2626',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                <Trash2 size={12} /> Delete User
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+
+
 
           </AnimatePresence>
         </div>

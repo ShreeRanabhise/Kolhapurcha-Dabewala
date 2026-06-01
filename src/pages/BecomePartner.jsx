@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, TrendingUp, Megaphone, CreditCard, 
   FileText, ShieldCheck, Store, Award, 
   Eye, Star, Smartphone, Settings, 
   ChevronDown, Phone, Mail, Building, 
-  MapPin, Check, Headphones, ArrowRight, X, ChefHat, Bike, Shield
+  MapPin, Check, Headphones, ArrowRight, X, ChefHat, Bike, Shield, User
 } from 'lucide-react';
 import './BecomePartner.css';
 
@@ -23,7 +23,65 @@ const BecomePartner = () => {
   const [mealTypes, setMealTypes] = useState('');
   const [description, setDescription] = useState('');
   const [photosUploaded, setPhotosUploaded] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [photoBase64, setPhotoBase64] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [vendorId, setVendorId] = useState('');
+
+  const fileInputRef = useRef(null);
+
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setUploadedFiles(files);
+      setPhotosUploaded(true);
+      
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoBase64(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      setUploadedFiles(files);
+      setPhotosUploaded(true);
+
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoBase64(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearFiles = (e) => {
+    e.stopPropagation();
+    setUploadedFiles([]);
+    setPhotosUploaded(false);
+    setPhotoBase64('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
 
 
@@ -36,6 +94,15 @@ const BecomePartner = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Save vendor login credentials
+    const vendorAccounts = JSON.parse(localStorage.getItem('vendorAccounts') || '[]');
+    vendorAccounts.push({
+      vendorId: vendorId.trim(),
+      password: mobileNumber,
+      ownerName: ownerName.trim()
+    });
+    localStorage.setItem('vendorAccounts', JSON.stringify(vendorAccounts));
 
     // 1. Save onboarding application to pendingVendorApplications for Admin Dashboard
     const savedApps = localStorage.getItem('pendingVendorApplications');
@@ -54,7 +121,12 @@ const BecomePartner = () => {
       fssai: "FSSAI-" + Math.floor(10000000000000 + Math.random() * 90000000000000),
       area: location,
       status: "Pending",
-      plan: capacity.includes("2000+") ? "Growth Plan (₹999/mo)" : "Starter Plan (₹499/mo)"
+      plan: capacity.includes("2000+") ? "Growth Plan (₹999/mo)" : "Starter Plan (₹499/mo)",
+      price: capacity.includes("2000+") ? 2499 : capacity.includes("1000 - 2000") ? 2299 : 1999,
+      foodType: mealTypes,
+      description: description,
+      nearArea: location.toLowerCase().includes("university") || location.toLowerCase().includes("college") ? "Near College" : location.toLowerCase().includes("midc") || location.toLowerCase().includes("office") ? "Near Office" : "Near Hostel",
+      image: photoBase64 || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
     };
     const updatedApps = [newApp, ...currentApps];
     localStorage.setItem('pendingVendorApplications', JSON.stringify(updatedApps));
@@ -522,6 +594,21 @@ const BecomePartner = () => {
                     </div>
                   </div>
 
+                  {/* Vendor Login ID */}
+                  <div className="bp-form-field-group">
+                    <label>Vendor Login ID (Username)*</label>
+                    <div className="field-input-icon-wrap">
+                      <User size={16} className="field-icon" />
+                      <input 
+                        type="text" 
+                        placeholder="Create a Vendor ID" 
+                        required 
+                        value={vendorId}
+                        onChange={(e) => setVendorId(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
                   {/* Mobile Number */}
                   <div className="bp-form-field-group">
                     <label>Mobile Number*</label>
@@ -621,14 +708,35 @@ const BecomePartner = () => {
                   {/* Upload Kitchen Photos */}
                   <div className="bp-form-field-group">
                     <label>Upload Kitchen Photos*</label>
+                    <input 
+                      type="file" 
+                      multiple 
+                      accept="image/*" 
+                      ref={fileInputRef} 
+                      onChange={handleFileChange} 
+                      style={{ display: 'none' }} 
+                    />
                     <div 
-                      onClick={() => setPhotosUploaded(true)} 
+                      onClick={handleUploadClick}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
                       className={`form-upload-dashed-dropzone ${photosUploaded ? 'uploaded' : ''}`}
+                      style={{ cursor: 'pointer' }}
                     >
                       {photosUploaded ? (
-                        <div className="uploaded-success-inner">
-                          <Check size={20} className="icon-green" />
-                          <span>3 Photos Uploaded Successfully</span>
+                        <div className="uploaded-success-inner" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+                          {photoBase64 && (
+                            <img 
+                              src={photoBase64} 
+                              alt="Kitchen Preview" 
+                              style={{ width: '120px', height: '80px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #DDD', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} 
+                            />
+                          )}
+                          <div className="success-row-meta" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <Check size={18} className="icon-green" color="#10B981" />
+                            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#333' }}>{uploadedFiles.length} Photo(s) Selected</span>
+                            <button type="button" onClick={clearFiles} className="btn-clear-uploaded-files" style={{ background: 'none', border: 'none', color: '#DC2626', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+                          </div>
                         </div>
                       ) : (
                         <div className="upload-prompt-inner">
@@ -637,6 +745,58 @@ const BecomePartner = () => {
                           <span className="upload-sub-text">PNG, JPG up to 5MB each</span>
                         </div>
                       )}
+                    </div>
+                  </div>
+
+
+                  {/* Live Card Preview */}
+                  <div className="bp-form-field-group live-preview-card-section" style={{ marginTop: '1.5rem', borderTop: '1px solid #E2E8F0', paddingTop: '1.5rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--bp-orange)', fontWeight: '800', fontSize: '0.85rem' }}>
+                      ✨ Live Listing Card Preview
+                    </label>
+                    <p style={{ fontSize: '0.7rem', color: '#64748B', margin: '2px 0 1rem 0' }}>This is how your mess listing card will look to customers in the directory!</p>
+                    
+                    <div className="trending-card" style={{ maxWidth: '100%', margin: '0 auto', boxShadow: '0 8px 30px rgba(0,0,0,0.06)', borderRadius: '16px', background: '#fff', border: '1px solid rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+                      <div className="trending-image-wrapper" style={{ height: '160px', position: 'relative', overflow: 'hidden' }}>
+                        <img 
+                          src={photoBase64 || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"} 
+                          alt="Mess Preview" 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <div className="card-top-badges" style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', zIndex: 2 }}>
+                          <div className="rating-pill" style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '2px 8px', borderRadius: '100px', background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)', fontSize: '0.7rem', fontWeight: '800', color: '#0F172A' }}>
+                            <Star size={10} fill="#FFB800" stroke="none" />
+                            <span>5.0</span>
+                          </div>
+                          <div className="type-pill veg" style={{ display: 'inline-block', padding: '2px 8px', borderRadius: '100px', background: mealTypes.includes('Non-Veg') ? '#FEF2F2' : '#ECFDF5', color: mealTypes.includes('Non-Veg') ? '#DC2626' : '#10B981', fontSize: '0.7rem', fontWeight: '800', border: mealTypes.includes('Non-Veg') ? '1px solid rgba(220,38,38,0.15)' : '1px solid rgba(16,185,129,0.15)' }}>
+                            {mealTypes || "Veg Only"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="trending-content" style={{ padding: '1.25rem' }}>
+                        <h4 className="trending-name" style={{ margin: '0 0 4px 0', fontSize: '1.05rem', fontWeight: '850', color: '#0F172A', fontFamily: 'Outfit' }}>
+                          {messName || "Your Mess Name"}
+                        </h4>
+                        <div className="trending-meta" style={{ display: 'flex', gap: '1rem', color: '#64748B', fontSize: '0.75rem', marginBottom: '1rem' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <MapPin size={12} /> {location || "Your Location"}
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Users size={12} /> 0 Students
+                          </span>
+                        </div>
+                        <div className="trending-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '0.75rem' }}>
+                          <div className="trending-price" style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span className="price-amount" style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--bp-orange)' }}>
+                              ₹{capacity.includes("2000+") ? "2499" : capacity.includes("1000 - 2000") ? "2299" : "1999"}
+                            </span>
+                            <span className="price-duration" style={{ fontSize: '0.65rem', color: '#64748B', fontWeight: '600' }}>/month</span>
+                          </div>
+                          <button className="btn-card-outline" style={{ padding: '0.4rem 0.85rem', fontSize: '0.72rem', borderRadius: '8px', border: '1.5px solid #FF6B00', background: 'none', color: '#FF6B00', fontWeight: '800', cursor: 'default' }} type="button">
+                            View Details
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

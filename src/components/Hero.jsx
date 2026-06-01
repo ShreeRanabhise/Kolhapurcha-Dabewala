@@ -1,10 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Star, Bike, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Star, Bike, ArrowRight, MapPin, Search } from 'lucide-react';
 import './Hero.css';
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionRef = useRef(null);
+
+  const popularAreas = [
+    'Rajarampuri',
+    'Shahupuri',
+    'Tarabai Park',
+    'Cyber Chowk',
+    'Shivaji Udyam Nagar',
+    'University Road'
+  ];
+
+  const filteredSuggestions = popularAreas.filter(area => 
+    area.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (suggestionRef.current && !suggestionRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/find-mess?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/find-mess');
+    }
+  };
+
+  const handleSelectSuggestion = (area) => {
+    setSearchQuery(area);
+    setShowSuggestions(false);
+    navigate(`/find-mess?search=${encodeURIComponent(area)}`);
+  };
 
   return (
     <div className="hero-outer-wrapper">
@@ -24,10 +65,13 @@ const Hero = () => {
                 <span className="badge-text">Trusted by 1200+ Students & Professionals</span>
               </div>
               
+              {/* Catchy handwritten tag */}
+              <span className="hero-handwritten-tag">Purely Home-Cooked, Delivered With Love ❤️</span>
+
               {/* Large Marathi Headline */}
               <h1 className="hero-marathi-headline">
                 घरच्या जेवणाची चव,<br />
-                आता तुमच्या दारात!
+                आता <span className="hero-gradient-orange">तुमच्या दारात!</span>
               </h1>
               
               {/* English Subheadline */}
@@ -36,19 +80,50 @@ const Hero = () => {
                 <span className="subheadline-highlight"> Fresh food. Affordable plans. Daily delivery.</span>
               </p>
               
-              {/* CTA Action Buttons */}
-              <div className="hero-action-buttons">
-                <button 
-                  onClick={() => navigate('/find-mess')} 
-                  className="btn btn-primary-orange"
-                >
-                  Find Your Mess <ArrowRight size={18} className="arrow-icon" />
-                </button>
-                <button 
-                  onClick={() => navigate('/become-partner')} 
-                  className="btn btn-secondary-partner"
-                >
-                  Become a Partner
+              {/* Zomato-style Interactive Search Input */}
+              <div className="hero-search-wrapper" ref={suggestionRef}>
+                <form onSubmit={handleSearchSubmit} className="hero-search-form">
+                  <div className="search-input-field-wrap">
+                    <MapPin className="search-icon-pin" size={18} />
+                    <input 
+                      type="text" 
+                      placeholder="Enter your college, hostel or area..." 
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowSuggestions(true);
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                    />
+                  </div>
+                  <button type="submit" className="btn-hero-search">
+                    <Search size={16} />
+                    <span>Search</span>
+                  </button>
+                </form>
+
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <div className="hero-search-suggestions-dropdown">
+                    <div className="dropdown-section-title">POPULAR DELIVERY LOCATIONS</div>
+                    {filteredSuggestions.map((area, idx) => (
+                      <div 
+                        key={idx} 
+                        className="suggestion-row"
+                        onClick={() => handleSelectSuggestion(area)}
+                      >
+                        <MapPin size={14} className="icon-orange" />
+                        <span>{area}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Secondary CTA options / partners */}
+              <div className="hero-partner-links-row">
+                <span>Are you a mess owner?</span>
+                <button onClick={() => navigate('/become-partner')} className="hero-link-partner">
+                  Partner with us <ArrowRight size={12} />
                 </button>
               </div>
               

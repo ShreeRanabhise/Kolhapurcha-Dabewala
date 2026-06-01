@@ -265,3 +265,111 @@
   animation: spin 1s linear infinite;
   display: inline-block;
 }
+
+/* Pricing Plans Form styles */
+.set-pricing-plans-section {
+  margin-top: 3rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding-top: 2rem;
+}
+
+.plans-pricing-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  background: #FFFDF9;
+  border: 1px solid #FFE0B2;
+  border-radius: 16px;
+  padding: 1.75rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .plans-pricing-form {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+}
+
+.rate-input-wrap {
+  position: relative;
+}
+
+.rate-currency-symbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: #777;
+}
+
+.rate-input-field {
+  height: 44px;
+  padding: 0 1rem 0 1.85rem;
+  width: 100%;
+  border: 1px solid #DDD;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease;
+}
+
+.rate-input-field:focus {
+  outline: none;
+  border-color: var(--color-orange);
+}
+
+.btn-publish-plans {
+  background: var(--color-orange);
+  padding: 0.75rem 2.5rem;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-publish-plans:hover {
+  background: var(--color-orange-light);
+}
+
+/* Weekly Menu Scheduler Styles */
+.btn-autofill-menu {
+  transition: all var(--transition-fast) || 0.2s ease;
+}
+.btn-autofill-menu:hover {
+  background-color: rgba(255, 107, 0, 0.05) !important;
+  transform: translateY(-1px);
+}
+
+.day-menu-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.day-menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06) !important;
+  border-color: rgba(255, 107, 0, 0.15) !important;
+}
+
+.menu-input-group textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.menu-input-group textarea:focus {
+  outline: none;
+  border-color: var(--color-orange) !important;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+}
+
+/* Kitchen Profile Photo Uploader */
+.profile-image-uploader-btn .uploader-overlay {
+  opacity: 0;
+}
+.profile-image-uploader-btn:hover .uploader-overlay {
+  opacity: 1 !important;
+}
+.profile-image-uploader-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.1);
+}

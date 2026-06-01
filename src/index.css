@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Caveat:wght@700&display=swap');
 
 :root {
   --color-maroon: #6B0F1A;
@@ -15,7 +15,10 @@
   --color-gray-800: #1F2937;
   --color-gray-900: #111827;
 
-  --font-family: 'Poppins', sans-serif;
+  --font-family-body: 'Plus Jakarta Sans', sans-serif;
+  --font-family-headings: 'Outfit', sans-serif;
+  --font-family-handwritten: 'Caveat', cursive;
+  --font-family: var(--font-family-body);
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -44,11 +47,25 @@ html {
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-family-body);
   background-color: var(--color-off-white);
   color: var(--color-gray-900);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-headings);
+}
+
+.logo-subtext {
+  font-family: var(--font-family-handwritten) !important;
+  font-size: 1.05rem !important;
+  color: var(--color-orange) !important;
+  font-weight: 700 !important;
+  margin-top: 2px !important;
+  letter-spacing: 0.5px !important;
+  line-height: 1 !important;
 }
 
 a {

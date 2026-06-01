@@ -11,6 +11,44 @@ const ReferralBanner = () => {
   const [inviteSent, setInviteSent] = useState(false);
   const [sendingInvite, setSendingInvite] = useState(false);
 
+  const [isGiftOpen, setIsGiftOpen] = useState(false);
+  const [sparkles, setSparkles] = useState([]);
+  const [surpriseCopied, setSurpriseCopied] = useState(false);
+
+  const handleCopySurpriseCode = () => {
+    navigator.clipboard.writeText('CLUB150');
+    setSurpriseCopied(true);
+    setTimeout(() => setSurpriseCopied(false), 2000);
+  };
+
+  const triggerSparkles = () => {
+    const emojis = ['🎁', '🪙', '✨', '🎉', '🍱', '🍔', '🍕', '🍰', '🍿', '🔥', '👑', '🤩'];
+    const newSparkles = Array.from({ length: 24 }).map((_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * 150 + 80;
+      return {
+        id: Date.now() + i + Math.random(),
+        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        tx: Math.cos(angle) * distance,
+        ty: Math.sin(angle) * distance - 40,
+        scale: Math.random() * 1.5 + 0.8,
+        rotate: Math.random() * 360,
+        duration: Math.random() * 0.8 + 0.8
+      };
+    });
+    setSparkles(prev => [...prev, ...newSparkles]);
+    setTimeout(() => {
+      setSparkles(prev => prev.filter(s => !newSparkles.find(ns => ns.id === s.id)));
+    }, 1600);
+  };
+
+  const handleOpenGift = () => {
+    if (!isGiftOpen) {
+      setIsGiftOpen(true);
+    }
+    triggerSparkles();
+  };
+
   const handleCopyCode = () => {
     navigator.clipboard.writeText(referralCode);
     setCopied(true);
@@ -54,6 +92,110 @@ const ReferralBanner = () => {
           
           {/* Header row */}
           <div className="referral-header-wrap">
+            {/* Interactive Surprise Gift Animation */}
+            <div className="gift-animation-wrapper">
+              {!isGiftOpen && <div className="gift-pulse-glow"></div>}
+              
+              <div 
+                className={`surprise-gift-box ${isGiftOpen ? 'open' : ''}`}
+                onClick={handleOpenGift}
+                role="button"
+                aria-label="Open surprise reward gift"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenGift(); }}
+              >
+                {/* Gift Bow */}
+                <div className="gift-bow">
+                  <div className="gift-bow-left"></div>
+                  <div className="gift-bow-right"></div>
+                  <div className="gift-bow-center"></div>
+                </div>
+
+                {/* Gift Lid */}
+                <div className="gift-lid">
+                  <div className="gift-lid-ribbon"></div>
+                </div>
+
+                {/* Gift Body */}
+                <div className="gift-body">
+                  <div className="gift-body-ribbon-v"></div>
+                  <div className="gift-body-ribbon-h"></div>
+                </div>
+              </div>
+
+              {/* Sparkle Emitter Portal */}
+              {sparkles.map((sparkle) => (
+                <motion.span
+                  key={sparkle.id}
+                  className="sparkle-particle"
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 0, rotate: 0 }}
+                  animate={{ 
+                    x: sparkle.tx, 
+                    y: sparkle.ty, 
+                    rotate: sparkle.rotate, 
+                    opacity: [1, 1, 0],
+                    scale: [0, sparkle.scale, 0]
+                  }}
+                  transition={{ duration: sparkle.duration, ease: "easeOut" }}
+                >
+                  {sparkle.emoji}
+                </motion.span>
+              ))}
+
+              {/* Reward Reveal */}
+              <AnimatePresence>
+                {isGiftOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                    className="surprise-reward-reveal"
+                  >
+                    <div className="reveal-header">
+                      <span className="party-emoji">🎉</span>
+                      <h3>SURPRISE UNLOCKED!</h3>
+                      <span className="party-emoji">🎉</span>
+                    </div>
+                    <p className="reveal-sub">You unlocked a secret booster voucher!</p>
+                    
+                    <div className="surprise-code-card">
+                      <div className="surprise-code-label">PROMO CODE FOR YOUR FRIENDS</div>
+                      <div className="surprise-code-row">
+                        <code className="surprise-code-text">CLUB150</code>
+                        <button 
+                          type="button"
+                          onClick={handleCopySurpriseCode} 
+                          className={`surprise-copy-btn ${surpriseCopied ? 'copied' : ''}`}
+                        >
+                          {surpriseCopied ? (
+                            <>
+                              <Check size={14} />
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={14} />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <p className="reveal-disclaimer">
+                      Gives your referred friends <strong>₹150 off</strong> their first 3-day Trial Subscription. 
+                      You still get your <strong>₹100 wallet credit</strong> when they subscribe!
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {!isGiftOpen && (
+                <div className="gift-prompt-bubble animate-bounce">
+                  <span>🎁 Click to unlock your club booster!</span>
+                </div>
+              )}
+            </div>
+
             <div className="ref-badge">
               <Gift size={14} color="var(--color-orange)" fill="var(--color-orange)" />
               <span>COLHAPUR SHARE CLUB</span>

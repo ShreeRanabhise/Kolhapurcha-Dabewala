@@ -9,6 +9,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [userPhone, setUserPhone] = useState(localStorage.getItem('userPhone') || '');
+  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
   const [authPrefillPhone, setAuthPrefillPhone] = useState('');
   const [likedMesses, setLikedMesses] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -142,8 +143,12 @@ const Header = () => {
     }
   }, [navigate]);
 
-  const handleLoginSuccess = (phone) => {
+  const handleLoginSuccess = (phone, name) => {
     localStorage.setItem('userPhone', phone);
+    if (name) {
+      localStorage.setItem('userName', name);
+      setUserName(name);
+    }
     setUserPhone(phone);
     setIsAuthOpen(false);
     setAuthPrefillPhone('');
@@ -165,7 +170,9 @@ const Header = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('userPhone');
+    localStorage.removeItem('userName');
     setUserPhone('');
+    setUserName('');
     navigate('/');
   };
 
@@ -176,9 +183,10 @@ const Header = () => {
   };
 
   const getProfileButtonText = () => {
+    if (userName) return userName;
     if (userPhone === '9999999999') return 'Admin Panel';
     if (userPhone === '8888888888') return 'Vendor Panel';
-    return 'Profile';
+    return 'My Account';
   };
 
   return (
@@ -196,7 +204,6 @@ const Header = () => {
           <nav className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
             <Link to="/" className={isActive('/') && !location.hash ? 'active' : ''} onClick={() => setMobileMenuOpen(false)}>Home</Link>
             <Link to="/find-mess" className={isActive('/find-mess') ? 'active' : ''} onClick={() => setMobileMenuOpen(false)}>Find Mess</Link>
-            <Link to="/subscription-plans" className={isActive('/subscription-plans') ? 'active' : ''} onClick={() => setMobileMenuOpen(false)}>Subscription Plans</Link>
             <Link to="/how-it-works" className={isActive('/how-it-works') ? 'active' : ''} onClick={() => setMobileMenuOpen(false)}>How It Works</Link>
             <Link to="/become-partner" className={isActive('/become-partner') ? 'active' : ''} onClick={() => setMobileMenuOpen(false)}>Partner With Us</Link>
           </nav>
@@ -324,7 +331,7 @@ const Header = () => {
             {userPhone ? (
               <div className="user-logged-in-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Link to={getDashboardRoute()} className="btn btn-get-started" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <User size={15} /> My Account <ChevronDown size={13} />
+                  <User size={15} /> {getProfileButtonText()} <ChevronDown size={13} />
                 </Link>
                 <button 
                   onClick={handleLogout} 
@@ -341,7 +348,7 @@ const Header = () => {
                 className="btn btn-get-started"
                 style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
               >
-                <User size={15} /> My Account <ChevronDown size={13} />
+                <User size={15} /> Login / Sign Up
               </button>
             )}
           </div>

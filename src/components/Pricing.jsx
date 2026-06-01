@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   GraduationCap, Utensils, Crown, Check, CheckCircle2, 
@@ -9,9 +9,11 @@ import './Pricing.css';
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const [planDuration, setPlanDuration] = useState('monthly'); // 'monthly' or 'trial'
 
   const handleChoosePlan = (plan) => {
-    // Navigate to find mess directory with selected plan filter context
+    // Save selection context to filter directory
+    localStorage.setItem('selectedPricingPlanType', plan);
     navigate('/find-mess');
   };
 
@@ -61,189 +63,427 @@ const Pricing = () => {
           <p className="pricing-subheading-text">
             Affordable home-style meals for students, working professionals, bachelors and families.
           </p>
+
+          {/* DURATION SWITCH TOGGLE */}
+          <div className="pricing-duration-toggle" style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.5rem',
+            margin: '2.5rem auto 1rem auto',
+            background: 'rgba(255, 107, 0, 0.04)',
+            border: '1px solid rgba(255, 107, 0, 0.12)',
+            borderRadius: '99px',
+            padding: '0.4rem',
+            width: 'fit-content',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+          }}>
+            <button 
+              onClick={() => setPlanDuration('monthly')}
+              style={{
+                padding: '0.65rem 1.6rem',
+                borderRadius: '99px',
+                fontWeight: '700',
+                fontSize: '0.85rem',
+                border: 'none',
+                cursor: 'pointer',
+                background: planDuration === 'monthly' ? '#FF6B00' : 'none',
+                color: planDuration === 'monthly' ? 'white' : '#64748B',
+                boxShadow: planDuration === 'monthly' ? '0 4px 10px rgba(255, 107, 0, 0.2)' : 'none',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
+              📅 Monthly Subscriptions
+            </button>
+            <button 
+              onClick={() => setPlanDuration('trial')}
+              style={{
+                padding: '0.65rem 1.6rem',
+                borderRadius: '99px',
+                fontWeight: '700',
+                fontSize: '0.85rem',
+                border: 'none',
+                cursor: 'pointer',
+                background: planDuration === 'trial' ? '#FF6B00' : 'none',
+                color: planDuration === 'trial' ? 'white' : '#64748B',
+                boxShadow: planDuration === 'trial' ? '0 4px 10px rgba(255, 107, 0, 0.2)' : 'none',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
+              🎓 Student Trial Packs (High Conversion)
+            </button>
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#64748B', fontStyle: 'italic', margin: '4px 0 0 0' }}>
+            {planDuration === 'monthly' 
+              ? "✓ Best value for long-term daily home style food requirements" 
+              : "🔥 No commitment, zero cancel charges. Perfect to test food taste & promptness!"}
+          </p>
         </div>
 
         {/* PLAN CARDS GRID */}
         <div className="premium-plans-cards-grid">
-          
-          {/* CARD 1: Student Plan */}
-          <div className="plan-card-box student-box">
-            <div className="card-top-identity">
-              <div className="card-icon-round grey">
-                <GraduationCap size={28} className="icon-grey" />
+          {planDuration === 'monthly' ? (
+            <>
+              {/* CARD 1: Student Plan */}
+              <div className="plan-card-box student-box">
+                <div className="card-top-identity">
+                  <div className="card-icon-round grey">
+                    <GraduationCap size={28} className="icon-grey" />
+                  </div>
+                  <div className="card-title-badge-group">
+                    <h3 className="card-plan-title">Student Plan</h3>
+                    <span className="card-tag-pill orange">🔥 Most Popular</span>
+                  </div>
+                </div>
+
+                <div className="card-pricing-block">
+                  <span className="rupee-symbol">₹</span>
+                  <span className="price-number">1999</span>
+                  <span className="pricing-duration">/month</span>
+                </div>
+
+                <div className="card-divider-line"></div>
+
+                <ul className="card-features-bullet-list">
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Lunch Only</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>30 Meals / Month</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Daily Delivery</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Veg Meals</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Pause Anytime</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Customer Support</span>
+                  </li>
+                </ul>
+
+                <button 
+                  onClick={() => handleChoosePlan('student')} 
+                  className="btn-plan-action outline"
+                >
+                  Choose Plan
+                </button>
               </div>
-              <div className="card-title-badge-group">
-                <h3 className="card-plan-title">Student Plan</h3>
-                <span className="card-tag-pill orange">🔥 Most Popular</span>
+
+              {/* CARD 2: Standard Plan (Highlighted Card) */}
+              <div className="plan-card-box standard-box highlighted">
+                {/* Best Value Overlapping Badge */}
+                <div className="best-value-overlapping-badge">
+                  <Star size={12} fill="#FFFFFF" stroke="none" />
+                  <span>Best Value</span>
+                </div>
+
+                <div className="card-top-identity">
+                  <div className="card-icon-round orange">
+                    <Utensils size={26} className="icon-orange" />
+                  </div>
+                  <div className="card-title-badge-group">
+                    <h3 className="card-plan-title">Standard Plan</h3>
+                  </div>
+                </div>
+
+                <div className="card-pricing-block">
+                  <span className="rupee-symbol">₹</span>
+                  <span className="price-number">2499</span>
+                  <span className="pricing-duration">/month</span>
+                </div>
+
+                <div className="card-divider-line"></div>
+
+                <ul className="card-features-bullet-list">
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Lunch + Dinner</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>60 Meals / Month</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Daily Delivery</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Veg & Non-Veg Options</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Pause Anytime</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Change Provider Anytime</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Priority Support</span>
+                  </li>
+                </ul>
+
+                <button 
+                  onClick={() => handleChoosePlan('standard')} 
+                  className="btn-plan-action solid"
+                >
+                  Choose Plan
+                </button>
               </div>
-            </div>
 
-            <div className="card-pricing-block">
-              <span className="rupee-symbol">₹</span>
-              <span className="price-number">1999</span>
-              <span className="pricing-duration">/month</span>
-            </div>
+              {/* CARD 3: Premium Plan */}
+              <div className="plan-card-box premium-box">
+                <div className="card-top-identity">
+                  <div className="card-icon-round gold">
+                    <Crown size={26} className="icon-gold" />
+                  </div>
+                  <div className="card-title-badge-group">
+                    <h3 className="card-plan-title">Premium Plan</h3>
+                    <span className="card-tag-pill gold">👑 Premium</span>
+                  </div>
+                </div>
 
-            <div className="card-divider-line"></div>
+                <div className="card-pricing-block">
+                  <span className="rupee-symbol">₹</span>
+                  <span className="price-number">3499</span>
+                  <span className="pricing-duration">/month</span>
+                </div>
 
-            <ul className="card-features-bullet-list">
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Lunch Only</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>30 Meals / Month</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Daily Delivery</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Veg Meals</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Pause Anytime</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Customer Support</span>
-              </li>
-            </ul>
+                <div className="card-divider-line"></div>
 
-            <button 
-              onClick={() => handleChoosePlan('student')} 
-              className="btn-plan-action outline"
-            >
-              Choose Plan
-            </button>
-          </div>
+                <ul className="card-features-bullet-list">
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Breakfast + Lunch + Dinner</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Unlimited Monthly Meals</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Premium Mess Partners</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Free Delivery</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Flexible Schedule</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Priority Customer Support</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Special Weekend Menu</span>
+                  </li>
+                </ul>
 
-          {/* CARD 2: Standard Plan (Highlighted Card) */}
-          <div className="plan-card-box standard-box highlighted">
-            {/* Best Value Overlapping Badge */}
-            <div className="best-value-overlapping-badge">
-              <Star size={12} fill="#FFFFFF" stroke="none" />
-              <span>Best Value</span>
-            </div>
-
-            <div className="card-top-identity">
-              <div className="card-icon-round orange">
-                <Utensils size={26} className="icon-orange" />
+                <button 
+                  onClick={() => handleChoosePlan('premium')} 
+                  className="btn-plan-action outline"
+                >
+                  Choose Plan
+                </button>
               </div>
-              <div className="card-title-badge-group">
-                <h3 className="card-plan-title">Standard Plan</h3>
+            </>
+          ) : (
+            <>
+              {/* TRIAL CARD 1: 3-Day Taste Tester */}
+              <div className="plan-card-box student-box">
+                <div className="card-top-identity">
+                  <div className="card-icon-round grey">
+                    <GraduationCap size={28} className="icon-grey" />
+                  </div>
+                  <div className="card-title-badge-group">
+                    <h3 className="card-plan-title">3-Day Taste Test</h3>
+                    <span className="card-tag-pill orange">🌱 Try-Out Pack</span>
+                  </div>
+                </div>
+
+                <div className="card-pricing-block">
+                  <span className="rupee-symbol">₹</span>
+                  <span className="price-number">149</span>
+                  <span className="pricing-duration">/3 days</span>
+                </div>
+
+                <div className="card-divider-line"></div>
+
+                <ul className="card-features-bullet-list">
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Lunch or Dinner Only</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>3 Meals Total</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Daily Doorstep Delivery</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Pure Veg Menu Selection</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Instant WhatsApp Status</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>100% Refund if cold</span>
+                  </li>
+                </ul>
+
+                <button 
+                  onClick={() => handleChoosePlan('3-day-trial')} 
+                  className="btn-plan-action outline"
+                >
+                  Choose Trial
+                </button>
               </div>
-            </div>
 
-            <div className="card-pricing-block">
-              <span className="rupee-symbol">₹</span>
-              <span className="price-number">2499</span>
-              <span className="pricing-duration">/month</span>
-            </div>
+              {/* TRIAL CARD 2: 5-Day College Week (Highlighted Card) */}
+              <div className="plan-card-box standard-box highlighted">
+                {/* Most Popular Trial Overlapping Badge */}
+                <div className="best-value-overlapping-badge" style={{ background: '#FF6B00' }}>
+                  <Star size={12} fill="#FFFFFF" stroke="none" />
+                  <span>🔥 Most Popular Trial</span>
+                </div>
 
-            <div className="card-divider-line"></div>
+                <div className="card-top-identity">
+                  <div className="card-icon-round orange">
+                    <Utensils size={26} className="icon-orange" />
+                  </div>
+                  <div className="card-title-badge-group">
+                    <h3 className="card-plan-title">5-Day Hostel Pack</h3>
+                    <span className="card-tag-pill orange" style={{ background: 'rgba(255, 107, 0, 0.15)', color: '#FF6B00' }}>🎓 Highly Recommended</span>
+                  </div>
+                </div>
 
-            <ul className="card-features-bullet-list">
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Lunch + Dinner</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>60 Meals / Month</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Daily Delivery</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Veg & Non-Veg Options</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Pause Anytime</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Change Provider Anytime</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Priority Support</span>
-              </li>
-            </ul>
+                <div className="card-pricing-block">
+                  <span className="rupee-symbol">₹</span>
+                  <span className="price-number">249</span>
+                  <span className="pricing-duration">/5 days</span>
+                </div>
 
-            <button 
-              onClick={() => handleChoosePlan('standard')} 
-              className="btn-plan-action solid"
-            >
-              Choose Plan
-            </button>
-          </div>
+                <div className="card-divider-line"></div>
 
-          {/* CARD 3: Premium Plan */}
-          <div className="plan-card-box premium-box">
-            <div className="card-top-identity">
-              <div className="card-icon-round gold">
-                <Crown size={26} className="icon-gold" />
+                <ul className="card-features-bullet-list">
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Lunch or Dinner Daily</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>5 Meals (Monday to Friday)</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Skip Weekend automatically</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Veg & Non-Veg options</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Switch Tiffin vendor anytime</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Priority Hostel Gate Delivery</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Cancel & Refund remaining days</span>
+                  </li>
+                </ul>
+
+                <button 
+                  onClick={() => handleChoosePlan('5-day-trial')} 
+                  className="btn-plan-action solid"
+                >
+                  Choose Trial
+                </button>
               </div>
-              <div className="card-title-badge-group">
-                <h3 className="card-plan-title">Premium Plan</h3>
-                <span className="card-tag-pill gold">👑 Premium</span>
+
+              {/* TRIAL CARD 3: 7-Day Full Comfort */}
+              <div className="plan-card-box premium-box">
+                <div className="card-top-identity">
+                  <div className="card-icon-round gold">
+                    <Crown size={26} className="icon-gold" />
+                  </div>
+                  <div className="card-title-badge-group">
+                    <h3 className="card-plan-title">7-Day Premium Trial</h3>
+                    <span className="card-tag-pill gold">👑 Full Week Preview</span>
+                  </div>
+                </div>
+
+                <div className="card-pricing-block">
+                  <span className="rupee-symbol">₹</span>
+                  <span className="price-number">399</span>
+                  <span className="pricing-duration">/7 days</span>
+                </div>
+
+                <div className="card-divider-line"></div>
+
+                <ul className="card-features-bullet-list">
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Lunch + Dinner (2 Meals/day)</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>14 Meals Total</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Sunday Special Thali included</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Premium Top Rated Messes</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Flexible delivery slots</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Dedicated support manager</span>
+                  </li>
+                  <li>
+                    <Check className="feature-check-icon" size={16} />
+                    <span>Zero transition charges</span>
+                  </li>
+                </ul>
+
+                <button 
+                  onClick={() => handleChoosePlan('7-day-trial')} 
+                  className="btn-plan-action outline"
+                >
+                  Choose Trial
+                </button>
               </div>
-            </div>
-
-            <div className="card-pricing-block">
-              <span className="rupee-symbol">₹</span>
-              <span className="price-number">3499</span>
-              <span className="pricing-duration">/month</span>
-            </div>
-
-            <div className="card-divider-line"></div>
-
-            <ul className="card-features-bullet-list">
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Breakfast + Lunch + Dinner</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Unlimited Monthly Meals</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Premium Mess Partners</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Free Delivery</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Flexible Schedule</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Priority Customer Support</span>
-              </li>
-              <li>
-                <Check className="feature-check-icon" size={16} />
-                <span>Special Weekend Menu</span>
-              </li>
-            </ul>
-
-            <button 
-              onClick={() => handleChoosePlan('premium')} 
-              className="btn-plan-action outline"
-            >
-              Choose Plan
-            </button>
-          </div>
-
+            </>
+          )}
         </div>
 
         {/* COMPARISON BAR */}

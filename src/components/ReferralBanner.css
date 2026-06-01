@@ -486,3 +486,363 @@
   0% { transform: rotate(90deg) translateX(-2px); }
   100% { transform: rotate(90deg) translateX(2px); }
 }
+
+/* Interactive Gift Animation Styles */
+.gift-animation-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2.5rem auto;
+  width: 240px;
+  height: auto;
+  z-index: 10;
+}
+
+/* Glowing Aura Behind Gift Box */
+.gift-pulse-glow {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.25) 0%, rgba(255, 107, 0, 0) 70%);
+  border-radius: 50%;
+  animation: glowPulse 2s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes glowPulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 0.9; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+/* 3D-Look Gift Box Styling */
+.surprise-gift-box {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.surprise-gift-box:not(.open):hover {
+  animation: giftWiggle 0.6s infinite ease-in-out;
+}
+
+@keyframes giftWiggle {
+  0% { transform: rotate(0deg) scale(1.05); }
+  25% { transform: rotate(-8deg) scale(1.05); }
+  50% { transform: rotate(8deg) scale(1.05); }
+  75% { transform: rotate(-4deg) scale(1.05); }
+  100% { transform: rotate(0deg) scale(1.05); }
+}
+
+/* Gift Bow & Ribbon Loops */
+.gift-bow {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 20px;
+  z-index: 7;
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.5s;
+}
+
+.gift-bow-left, .gift-bow-right {
+  position: absolute;
+  width: 20px;
+  height: 16px;
+  background: #FFD700; /* Beautiful Gold Ribbons */
+  border-radius: 50% 50% 0 50%;
+  border: 1.5px solid #E6B800;
+}
+
+.gift-bow-left {
+  left: 4px;
+  transform: rotate(-25deg);
+}
+
+.gift-bow-right {
+  right: 4px;
+  transform: rotate(25deg) scaleX(-1);
+  border-radius: 50% 50% 0 50%;
+}
+
+.gift-bow-center {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: #FFC400;
+  border-radius: 50%;
+  border: 1px solid #D4A373;
+}
+
+/* Gift Lid */
+.gift-lid {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 82px;
+  height: 18px;
+  background: linear-gradient(to right, #E53935, #C62828);
+  border-radius: 4px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 6;
+  transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1.3), opacity 0.6s;
+}
+
+.gift-lid-ribbon {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 100%;
+  background: #FFD700;
+  border-left: 1px solid #E6B800;
+  border-right: 1px solid #E6B800;
+}
+
+/* Gift Body */
+.gift-body {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px;
+  height: 56px;
+  background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
+  border-radius: 0 0 8px 8px;
+  border: 1.5px solid rgba(0,0,0,0.12);
+  box-shadow: 0 8px 16px rgba(107, 15, 26, 0.08);
+  z-index: 4;
+  overflow: hidden;
+  transition: transform 0.4s;
+}
+
+.gift-body-ribbon-v {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 100%;
+  background: #FFD700;
+  border-left: 1px solid #E6B800;
+  border-right: 1px solid #E6B800;
+}
+
+.gift-body-ribbon-h {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 12px;
+  background: #FFD700;
+  border-top: 1px solid #E6B800;
+  border-bottom: 1px solid #E6B800;
+}
+
+/* Opened Gift State Animations */
+.surprise-gift-box.open .gift-lid {
+  transform: translate(-30px, -50px) rotate(-35deg);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.surprise-gift-box.open .gift-bow {
+  transform: translate(-30px, -50px) rotate(-35deg);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.surprise-gift-box.open .gift-body {
+  transform: translateX(-50%) scaleY(0.95);
+  background: linear-gradient(135deg, #B71C1C 0%, #880E4F 100%);
+}
+
+/* Sparkles Particle Styles */
+.sparkle-particle {
+  position: absolute;
+  font-size: 1.75rem;
+  z-index: 100;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.15));
+}
+
+/* Surprise Reward Reveal Banner Styling */
+.surprise-reward-reveal {
+  position: absolute;
+  top: 90px;
+  width: 320px;
+  background: linear-gradient(135deg, #FFFDFB 0%, #FFF5EF 100%);
+  border: 2px solid rgba(255, 107, 0, 0.25);
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 15px 40px rgba(255, 107, 0, 0.15);
+  z-index: 15;
+  text-align: center;
+}
+
+.reveal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.reveal-header h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--color-orange);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.party-emoji {
+  font-size: 1.25rem;
+  animation: bounceParty 1s infinite alternate;
+}
+
+@keyframes bounceParty {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.reveal-sub {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-gray-500);
+  margin: 0 0 1rem 0;
+}
+
+/* Surprise Coupon Code Card */
+.surprise-code-card {
+  background: var(--color-white);
+  border: 1.5px dashed rgba(255, 107, 0, 0.3);
+  border-radius: 16px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.surprise-code-label {
+  font-size: 0.65rem;
+  font-weight: 850;
+  color: var(--color-gray-400);
+  letter-spacing: 0.8px;
+  margin-bottom: 0.25rem;
+}
+
+.surprise-code-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.surprise-code-text {
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: 850;
+  color: #2E7D32; /* Green for unlocked success */
+  letter-spacing: 1px;
+}
+
+.surprise-copy-btn {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid rgba(46, 125, 50, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 750;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+}
+
+.surprise-copy-btn:hover {
+  background: #2E7D32;
+  color: var(--color-white);
+}
+
+.surprise-copy-btn.copied {
+  background: #2E7D32;
+  color: var(--color-white);
+  border-color: #2E7D32;
+}
+
+.reveal-disclaimer {
+  font-size: 0.7rem;
+  color: var(--color-gray-500);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.reveal-disclaimer strong {
+  color: var(--color-gray-800);
+  font-weight: 700;
+}
+
+/* Prompt Bubble pointing to the gift box */
+.gift-prompt-bubble {
+  position: absolute;
+  top: 90px;
+  background: var(--color-white);
+  padding: 0.5rem 0.85rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-gray-100);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-orange);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.gift-prompt-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--color-white) transparent;
+}
+
+/* Adjust header spacing to give room for the gift */
+.referral-header-wrap {
+  padding-top: 1rem;
+}
+
+/* Shake/bounce prompt bubble slightly */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-bounce {
+  animation: bounce 1.8s infinite;
+}
+
+@media (max-width: 400px) {
+  .surprise-reward-reveal {
+    width: 280px;
+    padding: 1.25rem 1rem;
+  }
+  .surprise-code-text {
+    font-size: 1.25rem;
+  }
+}

@@ -738,15 +738,65 @@
 
 .uploaded-success-inner {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.success-row-meta {
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  width: 100%;
+  position: relative;
 }
 
-.uploaded-success-inner span {
+.success-row-meta span {
   font-size: 0.82rem;
   font-weight: 700;
   color: #16A34A;
+}
+
+.btn-clear-uploaded-files {
+  background: none;
+  border: none;
+  color: #EF4444;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin-left: 0.25rem;
+}
+
+.btn-clear-uploaded-files:hover {
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.uploaded-files-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+.uploaded-filename-chip {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #15803D;
+  background-color: #DCFCE7;
+  border: 1px solid rgba(21, 128, 61, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .upload-prompt-inner {

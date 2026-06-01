@@ -6,92 +6,43 @@ import {
 } from 'lucide-react';
 import './FindMess.css';
 
-// Mock Database of Verified Mess Partners in Kolhapur matching the screenshot exactly
-const MOCK_MESSES = [
-  {
-    id: 1,
-    name: "Shivneri Mess",
-    area: "Shahupuri",
-    price: 2399,
-    rating: 4.5,
-    isVeg: true,
-    isPremium: true,
-    nearArea: "Near Office",
-    description: "Fresh home-style meals prepared daily with love and hygiene.",
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 2,
-    name: "Aai's Kitchen",
-    area: "Tarabai Park",
-    price: 2199,
-    rating: 4.7,
-    isVeg: true,
-    nearArea: "Near Hostel",
-    description: "Tasty, hygienic and balanced home cooked meals.",
-    image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 3,
-    name: "Gharacha Swad Mess",
-    area: "Rajarampuri",
-    price: 2099,
-    rating: 4.6,
-    isVeg: true,
-    nearArea: "Near College",
-    description: "Pure home-style food with authentic taste and quality.",
-    image: "https://images.unsplash.com/photo-1589302168068-964664d93cb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 4,
-    name: "Kolhapur Tiffin Service",
-    area: "C Ward",
-    price: 1999,
-    rating: 4.5,
-    isVeg: true,
-    nearArea: "Near College",
-    description: "Affordable and delicious tiffin service for everyone.",
-    image: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 5,
-    name: "Sai Home Kitchen",
-    area: "New Shahupuri",
-    price: 2499,
-    rating: 4.8,
-    isVeg: true,
-    isPremium: true,
-    nearArea: "Near Office",
-    description: "Healthy, homely and hygienic meals delivered on time.",
-    image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  },
-  {
-    id: 6,
-    name: "Maa Annapurna Mess",
-    area: "Bhandiwade",
-    price: 2299,
-    rating: 4.6,
-    isVeg: true,
-    nearArea: "Near Hostel",
-    description: "Traditional recipes with modern hygiene standards.",
-    image: "https://images.unsplash.com/photo-1621979087428-11136877c3ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-  }
-];
-
+// Load messes dynamically from local storage approvedVendors
 const FindMess = () => {
   const navigate = useNavigate();
+  const [allMesses, setAllMesses] = useState([]);
+
+  useEffect(() => {
+    const savedVendors = localStorage.getItem('approvedVendors');
+    if (savedVendors) {
+      try {
+        const parsed = JSON.parse(savedVendors);
+        // Map vendor properties to ensure fields match what FindMess expects
+        const mapped = parsed.map(vendor => ({
+          id: vendor.id || Date.now() + Math.random(),
+          name: vendor.name || vendor.messName || "Approved Mess",
+          area: vendor.area || "Shahupuri",
+          price: vendor.price || 2100,
+          rating: vendor.rating || 4.7,
+          isVeg: vendor.isVeg !== undefined ? vendor.isVeg : true,
+          isPremium: vendor.isPremium || false,
+          nearArea: vendor.nearArea || "Near College",
+          description: vendor.description || "Fresh home-style meals prepared daily with love and hygiene.",
+          image: vendor.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+        }));
+        setAllMesses(mapped);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
 
   // Filters State setup - default checked filters set to match screenshot
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArea, setSelectedArea] = useState('');
   const [isVegChecked, setIsVegChecked] = useState(true);
   const [isNonVegChecked, setIsNonVegChecked] = useState(false);
-  
-  // Budget Per Month Checkboxes
-  const [budget15_20, setBudget15_20] = useState(false);
-  const [budget20_25, setBudget20_25] = useState(true); // checked by default in screenshot
-  const [budget25_30, setBudget25_30] = useState(false);
-  const [budget30Plus, setBudget30Plus] = useState(false);
+
 
   // Proximity delivery area
   const [nearCollege, setNearCollege] = useState(false);
@@ -137,7 +88,7 @@ const FindMess = () => {
 
   // Filter Logic
   const getFilteredMesses = () => {
-    return MOCK_MESSES.filter(mess => {
+    return allMesses.filter(mess => {
       // 1. Search Query filter (split into terms, matching individual words, ignoring generic 'kolhapur' constraints)
       if (searchQuery.trim() !== '') {
         const query = searchQuery.toLowerCase().trim();
@@ -169,15 +120,10 @@ const FindMess = () => {
       if (isNonVegChecked && !isVegChecked && mess.isVeg) return false;
       if (!isVegChecked && !isNonVegChecked) return false; // Show nothing if both unchecked
 
-      // 4. Budget Range Check
-      const budgetChecked = budget15_20 || budget20_25 || budget25_30 || budget30Plus;
-      if (budgetChecked) {
-        let matchesBudget = false;
-        if (budget15_20 && mess.price >= 1500 && mess.price < 2000) matchesBudget = true;
-        if (budget20_25 && mess.price >= 2000 && mess.price < 2500) matchesBudget = true;
-        if (budget25_30 && mess.price >= 2500 && mess.price < 3000) matchesBudget = true;
-        if (budget30Plus && mess.price >= 3000) matchesBudget = true;
-        if (!matchesBudget) return false;
+      // 4. Budget Filter Chip Match
+      if (activeChip === 'Budget') {
+        const priceVal = mess.price || 2100;
+        if (priceVal > 2200) return false;
       }
 
       // 5. Proximity Area check
@@ -210,10 +156,6 @@ const FindMess = () => {
     setSelectedArea('');
     setIsVegChecked(true);
     setIsNonVegChecked(false);
-    setBudget15_20(false);
-    setBudget20_25(false);
-    setBudget25_30(false);
-    setBudget30Plus(false);
     setNearCollege(false);
     setNearOffice(false);
     setNearHostel(false);
@@ -233,10 +175,6 @@ const FindMess = () => {
       setIsNonVegChecked(true);
     } else if (chip === 'Budget') {
       setIsVegChecked(true);
-      setBudget15_20(true);
-      setBudget20_25(true);
-      setBudget25_30(false);
-      setBudget30Plus(false);
     } else if (chip === 'Premium') {
       // Handled dynamically via activeChip === 'Premium' inside getFilteredMesses
     }
@@ -401,51 +339,6 @@ const FindMess = () => {
               </div>
             </div>
 
-            {/* BUDGET FILTER */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <HelpCircle size={16} className="sidebar-icon" /> Budget (Per Month)
-              </label>
-              <div className="checkbox-options-list">
-                <label className="custom-checkbox-row">
-                  <input 
-                    type="checkbox" 
-                    checked={budget15_20}
-                    onChange={(e) => setBudget15_20(e.target.checked)}
-                  />
-                  <span className="checkbox-design"></span>
-                  <span className="label-text">₹1500 - ₹2000</span>
-                </label>
-                <label className="custom-checkbox-row">
-                  <input 
-                    type="checkbox" 
-                    checked={budget20_25}
-                    onChange={(e) => setBudget20_25(e.target.checked)}
-                  />
-                  <span className="checkbox-design"></span>
-                  <span className="label-text">₹2000 - ₹2500</span>
-                </label>
-                <label className="custom-checkbox-row">
-                  <input 
-                    type="checkbox" 
-                    checked={budget25_30}
-                    onChange={(e) => setBudget25_30(e.target.checked)}
-                  />
-                  <span className="checkbox-design"></span>
-                  <span className="label-text">₹2500 - ₹3000</span>
-                </label>
-                <label className="custom-checkbox-row">
-                  <input 
-                    type="checkbox" 
-                    checked={budget30Plus}
-                    onChange={(e) => setBudget30Plus(e.target.checked)}
-                  />
-                  <span className="checkbox-design"></span>
-                  <span className="label-text">₹3000+</span>
-                </label>
-              </div>
-            </div>
-
             {/* DELIVERY AREA PROXIMITY */}
             <div className="filter-group">
               <label className="filter-label">
@@ -606,9 +499,15 @@ const FindMess = () => {
 
                       {/* Pill features list */}
                       <div className="card-features-tag-list">
-                        <span className="feature-tag-item">
-                          <span className="tag-emoji">🍱</span> Veg Meals
-                        </span>
+                        {mess.isVeg ? (
+                          <span className="feature-tag-item veg-tag" style={{ backgroundColor: '#ECFDF5', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                            <span className="tag-emoji">🌱</span> Pure Veg
+                          </span>
+                        ) : (
+                          <span className="feature-tag-item nonveg-tag" style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid rgba(220, 38, 38, 0.15)' }}>
+                            <span className="tag-emoji">🍖</span> Veg & Non-Veg
+                          </span>
+                        )}
                         <span className="feature-tag-item">
                           <span className="tag-emoji">🚚</span> Daily Delivery
                         </span>
@@ -627,7 +526,7 @@ const FindMess = () => {
                       {/* Bottom button block */}
                       <div className="card-action-row">
                         <button 
-                          onClick={() => triggerSubscribe(mess.name)} 
+                          onClick={() => navigate(`/find-mess/${mess.name.toLowerCase().replace(/\s+/g, '-')}`)} 
                           className="btn-card-details-outline"
                         >
                           View Details

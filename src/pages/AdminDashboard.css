@@ -142,3 +142,24 @@
   animation: spin 1s linear infinite;
   display: inline-block;
 }
+
+/* Manage Vendor Button hover styles */
+.btn-status-hold {
+  transition: all 0.2s ease;
+}
+.btn-status-hold:hover {
+  background-color: #F8F9FA !important;
+  border-color: #999 !important;
+  transform: translateY(-1px);
+}
+
+.btn-status-delete {
+  transition: all 0.2s ease;
+}
+.btn-status-delete:hover {
+  background-color: #FEE2E2 !important;
+  border-color: #FCA5A5 !important;
+  color: #B91C1C !important;
+  transform: translateY(-1px);
+}
+

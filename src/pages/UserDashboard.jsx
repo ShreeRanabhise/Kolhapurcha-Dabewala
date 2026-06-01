@@ -20,17 +20,8 @@ const AVAILABLE_MESSES = [
 const UserDashboard = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    const phone = localStorage.getItem('userPhone');
-    if (!phone) {
-      localStorage.setItem('triggerLogin', 'user');
-      navigate('/');
-    }
-  }, [navigate]);
-
   const [activeTab, setActiveTab] = useState('scheduler'); // 'scheduler', 'subscription', 'wallet', 'history'
-  const [userPhone, setUserPhone] = useState(localStorage.getItem('userPhone') || '9876543210');
+  const [userPhone, setUserPhone] = useState('');
   
   // Subscription Info States
   const [currentMess, setCurrentMess] = useState(AVAILABLE_MESSES[0]); // Suvarna Mess
@@ -41,8 +32,7 @@ const UserDashboard = () => {
   const [addressInput, setAddressInput] = useState(address);
   
   // Interactive Tiffin Scheduler States
-  // Let's generate dates for June 2026
-  const [pausedDates, setPausedDates] = useState(['2026-06-05', '2026-06-06']); // Initially paused dates
+  const [pausedDates, setPausedDates] = useState([]); 
   const [walletBalance, setWalletBalance] = useState(380);
   const [showCalendarToast, setShowCalendarToast] = useState(null); // { message, type }
 
@@ -51,10 +41,70 @@ const UserDashboard = () => {
   const [showSwapConfirm, setShowSwapConfirm] = useState(false);
   const [swapResult, setSwapResult] = useState(null);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const sessionPhone = localStorage.getItem('userSessionPhone') || localStorage.getItem('userPhone');
+    if (!sessionPhone) {
+      localStorage.setItem('triggerLogin', 'user');
+      navigate('/');
+      return;
+    }
+    setUserPhone(sessionPhone);
+
+    // 1. Load active subscription from localStorage
+    const activeSubs = JSON.parse(localStorage.getItem('activeSubscriptions') || '[]');
+    const userSub = activeSubs.find(sub => sub.userPhone === sessionPhone && sub.status === 'Active');
+    
+    if (userSub) {
+      setCurrentMess({
+        id: userSub.id,
+        name: userSub.messName,
+        price: userSub.price,
+        type: userSub.mealTime === 'Both' ? 'Lunch + Dinner' : userSub.mealTime + ' Only'
+      });
+      setTimeSlot(userSub.mealTime === 'Both' ? 'Lunch & Dinner' : userSub.mealTime === 'Lunch' ? 'Lunch (12:30 PM)' : 'Dinner (7:30 PM)');
+    }
+
+    // 2. Load wallet balance and paused dates specific to user
+    const savedWallet = localStorage.getItem(`wallet_${sessionPhone}`);
+    if (savedWallet) {
+      setWalletBalance(Number(savedWallet));
+    } else {
+      const defaultWallet = 380;
+      setWalletBalance(defaultWallet);
+      localStorage.setItem(`wallet_${sessionPhone}`, String(defaultWallet));
+    }
+
+    const savedPaused = localStorage.getItem(`paused_dates_${sessionPhone}`);
+    if (savedPaused) {
+      const parsed = JSON.parse(savedPaused);
+      setPausedDates(parsed);
+      setDaysRemaining(30 - parsed.length);
+    } else {
+      const defaultPaused = ['2026-06-05', '2026-06-06'];
+      setPausedDates(defaultPaused);
+      setDaysRemaining(30 - defaultPaused.length);
+      localStorage.setItem(`paused_dates_${sessionPhone}`, JSON.stringify(defaultPaused));
+    }
+
+    // 3. Load Address
+    const savedAddress = localStorage.getItem(`address_${sessionPhone}`);
+    if (savedAddress) {
+      setAddress(savedAddress);
+      setAddressInput(savedAddress);
+    } else {
+      const defaultAddress = 'Flat 402, Shivneri Heights, Rajarampuri 4th Lane, Kolhapur';
+      setAddress(defaultAddress);
+      setAddressInput(defaultAddress);
+      localStorage.setItem(`address_${sessionPhone}`, defaultAddress);
+    }
+  }, [navigate]);
+
   // Address edit handler
   const saveAddress = () => {
     setAddress(addressInput);
     setIsEditingAddress(false);
+    localStorage.setItem(`address_${userPhone}`, addressInput);
     triggerToast('Delivery address updated successfully.', 'success');
   };
 
@@ -67,20 +117,33 @@ const UserDashboard = () => {
   const toggleDatePause = (dateString) => {
     const isPaused = pausedDates.includes(dateString);
     const dailyRefund = Math.round(currentMess.price / 30);
+    const phoneKey = userPhone || '9876543210';
+
+    let updatedPaused;
+    let updatedWallet;
+    let updatedDays;
 
     if (isPaused) {
       // Resume delivery
-      setPausedDates(pausedDates.filter(d => d !== dateString));
-      setWalletBalance(prev => Math.max(0, prev - dailyRefund));
-      setDaysRemaining(prev => prev + 1);
+      updatedPaused = pausedDates.filter(d => d !== dateString);
+      updatedWallet = Math.max(0, walletBalance - dailyRefund);
+      updatedDays = daysRemaining + 1;
       triggerToast(`Delivery resumed for ${formatDate(dateString)}. ₹${dailyRefund} adjusted.`, 'info');
     } else {
       // Pause delivery
-      setPausedDates([...pausedDates, dateString]);
-      setWalletBalance(prev => prev + dailyRefund);
-      setDaysRemaining(prev => prev - 1);
+      updatedPaused = [...pausedDates, dateString];
+      updatedWallet = walletBalance + dailyRefund;
+      updatedDays = daysRemaining - 1;
       triggerToast(`Tiffin paused for ${formatDate(dateString)}. ₹${dailyRefund} credited to Wallet.`, 'success');
     }
+
+    setPausedDates(updatedPaused);
+    setWalletBalance(updatedWallet);
+    setDaysRemaining(updatedDays);
+
+    // Save to localStorage
+    localStorage.setItem(`paused_dates_${phoneKey}`, JSON.stringify(updatedPaused));
+    localStorage.setItem(`wallet_${phoneKey}`, String(updatedWallet));
   };
 
   // Handle Mess Swapping calculation
@@ -92,8 +155,6 @@ const UserDashboard = () => {
     setSelectedSwapTarget(target);
 
     // Swap adjustments:
-    // Remaining value = daysRemaining * (currentMess.price / 30)
-    // New days remaining = Remaining value / (target.price / 30)
     const currentDaily = currentMess.price / 30;
     const targetDaily = target.price / 30;
     const remainingValue = daysRemaining * currentDaily;
@@ -114,6 +175,16 @@ const UserDashboard = () => {
     setSelectedSwapTarget('');
     setSwapResult(null);
     setShowSwapConfirm(false);
+
+    // Update inside activeSubscriptions in localStorage
+    const activeSubs = JSON.parse(localStorage.getItem('activeSubscriptions') || '[]');
+    const userSubIdx = activeSubs.findIndex(sub => sub.userPhone === userPhone && sub.status === 'Active');
+    if (userSubIdx > -1) {
+      activeSubs[userSubIdx].messName = selectedSwapTarget.name;
+      activeSubs[userSubIdx].price = selectedSwapTarget.price;
+      localStorage.setItem('activeSubscriptions', JSON.stringify(activeSubs));
+    }
+
     triggerToast(`Switched mess provider to ${selectedSwapTarget.name}!`, 'success');
   };
 
