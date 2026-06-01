@@ -3,10 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Hero from '../components/Hero';
 import TrustBar from '../components/TrustBar';
 import FeaturedMesses from '../components/FeaturedMesses';
-import Pricing from '../components/Pricing';
-import FeaturesGrid from '../components/FeaturesGrid';
-import HowItWorks from '../components/HowItWorks';
-import MenuPreview from '../components/MenuPreview';
+
 import Testimonials from '../components/Testimonials';
 import AppPromo from '../components/AppPromo';
 import ReferralBanner from '../components/ReferralBanner';
@@ -32,12 +29,9 @@ const Home = () => {
   return (
     <>
       <Hero />
-      <TrustBar />
       <FeaturedMesses />
-      <Pricing />
-      <FeaturesGrid />
-      <HowItWorks />
-      <MenuPreview />
+      <TrustBar />
+
       <Testimonials />
       <AppPromo />
       <ReferralBanner />

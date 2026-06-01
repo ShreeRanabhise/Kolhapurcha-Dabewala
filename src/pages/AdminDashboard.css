@@ -1,0 +1,144 @@
+/* AdminDashboard.css */
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.admin-stat-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem 2rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-stat-card h3 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--color-gray-900);
+  margin: 0.25rem 0;
+  line-height: 1;
+}
+
+/* System Activity list */
+.activity-item {
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  transition: all var(--transition-fast);
+}
+.activity-item:hover {
+  transform: translateX(4px);
+  border-color: rgba(255, 107, 0, 0.1);
+}
+
+/* Onboarding Approval Card */
+.approval-card-item, .dispute-card-item {
+  background-color: var(--color-white);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+}
+
+.badge-area {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: rgba(255, 107, 0, 0.06);
+  color: var(--color-orange);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  margin-bottom: 0.75rem;
+}
+
+.approval-card-item h3 {
+  font-size: 1.25rem;
+  font-weight: 850;
+  margin: 0 0 0.5rem 0;
+  color: var(--color-gray-900);
+}
+
+.approval-card-item p {
+  font-size: 0.9rem;
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+.approval-card-item p code {
+  background-color: var(--color-gray-100);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.doc-link-btn {
+  transition: all var(--transition-fast);
+}
+.doc-link-btn:hover {
+  background-color: var(--color-gray-200) !important;
+  color: var(--color-gray-900);
+}
+
+/* Dispute Card */
+.dispute-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.dispute-id-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: rgba(107, 15, 26, 0.06);
+  color: var(--color-maroon);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.dispute-header-row h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.refund-amount-tag {
+  font-size: 0.9rem;
+  color: var(--color-gray-500);
+  flex-shrink: 0;
+}
+
+.refund-amount-tag strong {
+  font-size: 1.25rem;
+  color: #DC2626;
+  font-weight: 800;
+}
+
+/* Responsive grid layouts */
+@media (max-width: 1024px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* Spinner Spin Animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}

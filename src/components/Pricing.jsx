@@ -1,268 +1,354 @@
-import React, { useState } from 'react';
-import { ArrowRight, Star, Truck, ShieldCheck, Users, GraduationCap, Briefcase, Crown, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  GraduationCap, Utensils, Crown, Check, CheckCircle2, 
+  RotateCcw, ShieldCheck, BadgeCheck, Users, Smile, Bike, 
+  Star, Headphones 
+} from 'lucide-react';
 import './Pricing.css';
 
 const Pricing = () => {
-  const [billingCycle, setBillingCycle] = useState('monthly');
+  const navigate = useNavigate();
+
+  const handleChoosePlan = (plan) => {
+    // Navigate to find mess directory with selected plan filter context
+    navigate('/find-mess');
+  };
+
+  const handleContactUs = () => {
+    const footerElement = document.getElementById('footer');
+    if (footerElement) {
+      footerElement.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/#footer');
+    }
+  };
 
   return (
-    <section id="plans" className="pricing-section">
-      {/* Decorative background elements can be added here if needed */}
-      <div className="pricing-bg-pattern"></div>
-      
-      <div className="container relative z-10">
+    <section className="premium-pricing-section">
+      <div className="pricing-container-width">
         
-        {/* Header Section */}
-        <div className="pricing-header">
-          <div className="pre-title">
-            <span>👑</span> SUBSCRIPTION PLANS
-          </div>
-          <h2 className="pricing-title">
-            Choose Your Perfect <span className="text-maroon">Meal Plan</span>
-          </h2>
-          <p className="pricing-subtitle">
-            Fresh, home-cooked meals delivered daily with love and hygiene. <span className="text-red">❤️</span>
-          </p>
-          
-          <div className="floating-text left-floating">
-            <span className="text-sm">घरगुती चव,<br/>रोज तुमच्या दारात</span>
-          </div>
-          <div className="floating-text right-floating">
-            <span className="text-sm">Loved by<br/>1000+ Families</span>
-          </div>
-          
-          {/* Billing Toggle */}
-          <div className="billing-toggle-wrapper">
-            <div className="billing-toggle">
-              <button 
-                className={`toggle-btn ${billingCycle === 'monthly' ? 'active' : ''}`}
-                onClick={() => setBillingCycle('monthly')}
-              >
-                <div className="toggle-title">Monthly</div>
-                <div className="toggle-sub">Best Flexibility</div>
-              </button>
-              <button 
-                className={`toggle-btn ${billingCycle === 'quarterly' ? 'active' : ''}`}
-                onClick={() => setBillingCycle('quarterly')}
-              >
-                <div className="toggle-title">Quarterly</div>
-                <div className="toggle-sub text-maroon">Save 10%</div>
-              </button>
-              <button 
-                className={`toggle-btn relative ${billingCycle === 'yearly' ? 'active' : ''}`}
-                onClick={() => setBillingCycle('yearly')}
-              >
-                <div className="best-value-badge">Best Value</div>
-                <div className="toggle-title">Yearly</div>
-                <div className="toggle-sub text-green">Save 20%</div>
-              </button>
-            </div>
-          </div>
+        {/* Floating Thalis for Premium Tech Startup Aesthetic */}
+        <div className="floating-plate floating-plate-left">
+          <img 
+            src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=400&q=80" 
+            alt="Delicious Indian Curry Rice Thali Plate" 
+          />
         </div>
-        
-        {/* Pricing Cards Grid */}
-        <div className="pricing-grid">
-          
-          {/* Card 1: Student Plan */}
-          <div className="pricing-card standard-card">
-            <div className="card-top-icons">
-              <div className="card-identity">
-                <div className="icon-circle text-orange"><GraduationCap size={28} /></div>
-                <div>
-                  <h3 className="plan-name text-orange">STUDENT PLAN</h3>
-                  <p className="plan-desc">Perfect for Students</p>
-                </div>
-              </div>
-              {/* Replace the src below with your local image path once you save it */}
-              <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80" alt="Student Thali" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-            </div>
-            
-            <div className="card-middle">
-              <div className="price-info">
-                <div className="price-display">
-                  <span className="currency">₹</span>
-                  <span className="amount">2,199</span>
-                  <span className="period">/month</span>
-                </div>
-                <div className="subscription-label">30 Days Subscription</div>
-              </div>
-            </div>
-            
-            <ul className="features-grid-list">
-              <li><CheckCircle2 size={16} className="text-orange" /> Lunch Daily</li>
-              <li><CheckCircle2 size={16} className="text-orange" /> Hygienic & Fresh</li>
-              <li><CheckCircle2 size={16} className="text-orange" /> 2 Chapati</li>
-              <li><CheckCircle2 size={16} className="text-orange" /> Pause Anytime</li>
-              <li><CheckCircle2 size={16} className="text-orange" /> Rice, Dal, 1 Sabji</li>
-              <li><CheckCircle2 size={16} className="text-orange" /> No Hidden Charges</li>
-              <li><CheckCircle2 size={16} className="text-orange" /> Free Delivery</li>
-            </ul>
-            
-            <div className="card-footer">
-              <button className="btn-orange w-full">
-                Choose Plan <ArrowRight size={18} />
-              </button>
-              <div className="card-trust">
-                <ShieldCheck size={14} className="text-orange" /> Safe, Secure & Reliable
-              </div>
-            </div>
-          </div>
-          
-          {/* Card 2: Professional Plan (Most Popular) */}
-          <div className="pricing-card popular-card">
-            <div className="popular-badge">🔥 MOST POPULAR</div>
-            
-            <div className="card-top-icons">
-              <div className="card-identity">
-                <div className="icon-circle text-maroon bg-white"><Briefcase size={28} /></div>
-                <div>
-                  <h3 className="plan-name text-white">PROFESSIONAL PLAN</h3>
-                  <p className="plan-desc text-white-70">For Working Professionals</p>
-                </div>
-              </div>
-              <div className="icon-circle-outline border-gold"><Star size={28} className="text-gold" fill="currentColor" /></div>
-            </div>
-            
-            <div className="card-middle">
-              <div className="price-info">
-                <div className="price-display text-white">
-                  <span className="currency">₹</span>
-                  <span className="amount">3,299</span>
-                  <span className="period text-white-70">/month</span>
-                </div>
-                <div className="subscription-label bg-maroon-dark text-white">30 Days Subscription</div>
-              </div>
-            </div>
-            
-            <ul className="features-grid-list text-white">
-              <li><CheckCircle2 size={16} className="text-gold" /> Lunch + Dinner</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Free Delivery</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Rice, Dal</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Priority Delivery</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> 2 Sabji</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Hygienic & Fresh</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> 4 Chapati</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Pause Anytime</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Salad</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> 24/7 Support</li>
-            </ul>
-            
-            <div className="card-footer">
-              <button className="btn-white w-full">
-                Subscribe Now <ArrowRight size={18} className="text-maroon" />
-              </button>
-              <div className="card-subscribers">
-                <div className="avatar-group">
-                  <div className="avatar"></div>
-                  <div className="avatar"></div>
-                  <div className="avatar"></div>
-                </div>
-                <span>1000+ Happy Subscribers</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Card 3: Premium Home Food */}
-          <div className="pricing-card standard-card">
-            <div className="card-top-icons">
-              <div className="card-identity">
-                <div className="icon-circle text-gold"><Crown size={28} /></div>
-                <div>
-                  <h3 className="plan-name text-gold-dark">PREMIUM HOME FOOD</h3>
-                  <p className="plan-desc">Premium Taste. Premium Experience.</p>
-                </div>
-              </div>
-              <div className="icon-circle-outline"><span className="text-gold" style={{fontSize: '1.5rem'}}>💎</span></div>
-            </div>
-            
-            <div className="card-middle">
-              <div className="price-info">
-                <div className="price-display">
-                  <span className="currency">₹</span>
-                  <span className="amount">3,999</span>
-                  <span className="period">/month</span>
-                </div>
-                <div className="subscription-label">30 Days Subscription</div>
-              </div>
-            </div>
-            
-            <ul className="features-grid-list">
-              <li><CheckCircle2 size={16} className="text-gold" /> Lunch + Dinner</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Premium Packaging</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Premium Menu</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Priority Support</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Extra Sabji</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Fastest Delivery</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Salad + Sweet</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Pause Anytime</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> Weekend Special</li>
-              <li><CheckCircle2 size={16} className="text-gold" /> 100% Satisfaction</li>
-            </ul>
-            
-            <div className="card-footer">
-              <button className="btn-gold w-full">
-                Go Premium <ArrowRight size={18} />
-              </button>
-              <div className="card-trust">
-                <ShieldCheck size={14} className="text-gold" /> Best Quality. Best Taste.
-              </div>
-            </div>
-          </div>
-          
+        <div className="floating-plate floating-plate-right">
+          <img 
+            src="https://images.unsplash.com/photo-1589302168068-964664d93cb0?auto=format&fit=crop&w=400&q=80" 
+            alt="Traditional Indian Steel Thali Plate" 
+          />
         </div>
 
-        {/* Promo Banner */}
-        <div className="promo-pill">
-          🎁 Save up to ₹1,200 with Yearly Plan! 🎉
+        {/* Decorative Grid Dot Patterns */}
+        <div className="dots-grid dots-grid-left"></div>
+        <div className="dots-grid dots-grid-right"></div>
+
+        {/* SECTION HEADER */}
+        <div className="premium-pricing-header">
+          <div className="pricing-badge-capsule">
+            <span className="badge-emoji">💳</span>
+            <span className="badge-text">Flexible Subscription Plans</span>
+          </div>
+          
+          <h1 className="pricing-main-heading">
+            Choose the Perfect <br />
+            <span className="gradient-highlight-text">Meal Plan</span> for You
+          </h1>
+          
+          <p className="pricing-subheading-text">
+            Affordable home-style meals for students, working professionals, bachelors and families.
+          </p>
         </div>
-        
-        {/* Trust Indicators Banner */}
-        <div className="trust-banner">
-          <div className="trust-indicator">
-            <div className="trust-icon-box bg-orange-light">
-              <Star size={24} className="text-orange" fill="currentColor" />
+
+        {/* PLAN CARDS GRID */}
+        <div className="premium-plans-cards-grid">
+          
+          {/* CARD 1: Student Plan */}
+          <div className="plan-card-box student-box">
+            <div className="card-top-identity">
+              <div className="card-icon-round grey">
+                <GraduationCap size={28} className="icon-grey" />
+              </div>
+              <div className="card-title-badge-group">
+                <h3 className="card-plan-title">Student Plan</h3>
+                <span className="card-tag-pill orange">🔥 Most Popular</span>
+              </div>
             </div>
-            <div className="trust-text">
-              <div className="trust-value">4.8</div>
-              <div className="trust-label">Average Rating</div>
-              <div className="trust-stars">★★★★★</div>
+
+            <div className="card-pricing-block">
+              <span className="rupee-symbol">₹</span>
+              <span className="price-number">1999</span>
+              <span className="pricing-duration">/month</span>
+            </div>
+
+            <div className="card-divider-line"></div>
+
+            <ul className="card-features-bullet-list">
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Lunch Only</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>30 Meals / Month</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Daily Delivery</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Veg Meals</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Pause Anytime</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Customer Support</span>
+              </li>
+            </ul>
+
+            <button 
+              onClick={() => handleChoosePlan('student')} 
+              className="btn-plan-action outline"
+            >
+              Choose Plan
+            </button>
+          </div>
+
+          {/* CARD 2: Standard Plan (Highlighted Card) */}
+          <div className="plan-card-box standard-box highlighted">
+            {/* Best Value Overlapping Badge */}
+            <div className="best-value-overlapping-badge">
+              <Star size={12} fill="#FFFFFF" stroke="none" />
+              <span>Best Value</span>
+            </div>
+
+            <div className="card-top-identity">
+              <div className="card-icon-round orange">
+                <Utensils size={26} className="icon-orange" />
+              </div>
+              <div className="card-title-badge-group">
+                <h3 className="card-plan-title">Standard Plan</h3>
+              </div>
+            </div>
+
+            <div className="card-pricing-block">
+              <span className="rupee-symbol">₹</span>
+              <span className="price-number">2499</span>
+              <span className="pricing-duration">/month</span>
+            </div>
+
+            <div className="card-divider-line"></div>
+
+            <ul className="card-features-bullet-list">
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Lunch + Dinner</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>60 Meals / Month</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Daily Delivery</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Veg & Non-Veg Options</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Pause Anytime</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Change Provider Anytime</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Priority Support</span>
+              </li>
+            </ul>
+
+            <button 
+              onClick={() => handleChoosePlan('standard')} 
+              className="btn-plan-action solid"
+            >
+              Choose Plan
+            </button>
+          </div>
+
+          {/* CARD 3: Premium Plan */}
+          <div className="plan-card-box premium-box">
+            <div className="card-top-identity">
+              <div className="card-icon-round gold">
+                <Crown size={26} className="icon-gold" />
+              </div>
+              <div className="card-title-badge-group">
+                <h3 className="card-plan-title">Premium Plan</h3>
+                <span className="card-tag-pill gold">👑 Premium</span>
+              </div>
+            </div>
+
+            <div className="card-pricing-block">
+              <span className="rupee-symbol">₹</span>
+              <span className="price-number">3499</span>
+              <span className="pricing-duration">/month</span>
+            </div>
+
+            <div className="card-divider-line"></div>
+
+            <ul className="card-features-bullet-list">
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Breakfast + Lunch + Dinner</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Unlimited Monthly Meals</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Premium Mess Partners</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Free Delivery</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Flexible Schedule</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Priority Customer Support</span>
+              </li>
+              <li>
+                <Check className="feature-check-icon" size={16} />
+                <span>Special Weekend Menu</span>
+              </li>
+            </ul>
+
+            <button 
+              onClick={() => handleChoosePlan('premium')} 
+              className="btn-plan-action outline"
+            >
+              Choose Plan
+            </button>
+          </div>
+
+        </div>
+
+        {/* COMPARISON BAR */}
+        <div className="premium-comparison-bar-card">
+          <div className="comparison-item">
+            <div className="comp-icon-box green">
+              <CheckCircle2 size={20} className="icon-green" />
+            </div>
+            <div className="comp-text-details">
+              <h4>No Hidden Charges</h4>
+              <p>What you see is what you pay</p>
             </div>
           </div>
           
-          <div className="trust-indicator">
-            <div className="trust-icon-box bg-green-light">
-              <Users size={24} className="text-green" fill="currentColor" />
+          <div className="comparison-item">
+            <div className="comp-icon-box orange">
+              <RotateCcw size={20} className="icon-orange" />
             </div>
-            <div className="trust-text">
-              <div className="trust-value">1000+</div>
-              <div className="trust-label">Happy Subscribers</div>
-              <div className="trust-subtext">and growing</div>
-            </div>
-          </div>
-          
-          <div className="trust-indicator">
-            <div className="trust-icon-box bg-blue-light">
-              <Truck size={24} className="text-blue" fill="currentColor" />
-            </div>
-            <div className="trust-text">
-              <div className="trust-value">99%</div>
-              <div className="trust-label">On-time Delivery</div>
-              <div className="trust-subtext">You can trust</div>
+            <div className="comp-text-details">
+              <h4>Cancel Anytime</h4>
+              <p>Pause or cancel at any time</p>
             </div>
           </div>
-          
-          <div className="trust-indicator">
-            <div className="trust-icon-box bg-purple-light">
-              <ShieldCheck size={24} className="text-purple" />
+
+          <div className="comparison-item">
+            <div className="comp-icon-box blue">
+              <ShieldCheck size={20} className="icon-blue" />
             </div>
-            <div className="trust-text">
-              <div className="trust-value">50+</div>
-              <div className="trust-label">Verified Mess Partners</div>
-              <div className="trust-subtext">Quality Assured</div>
+            <div className="comp-text-details">
+              <h4>Secure Payments</h4>
+              <p>100% safe & secure payments</p>
+            </div>
+          </div>
+
+          <div className="comparison-item">
+            <div className="comp-icon-box purple">
+              <BadgeCheck size={20} className="icon-purple" />
+            </div>
+            <div className="comp-text-details">
+              <h4>Verified Mess Partners</h4>
+              <p>Quality checked & trusted</p>
             </div>
           </div>
         </div>
-        
+
+        {/* TRUST SECTION WITH STATS AND HELP CTA */}
+        <div className="premium-trust-stats-section-box">
+          <div className="trust-stats-left-grid">
+            <div className="trust-stat-col-item">
+              <div className="stat-icon-wrapper-orange">
+                <Users size={22} className="stat-orange-icon" />
+              </div>
+              <div className="stat-numbers-details">
+                <h3>50+</h3>
+                <h4>Verified Partners</h4>
+                <p>Trusted mess providers</p>
+              </div>
+            </div>
+
+            <div className="trust-stat-col-item">
+              <div className="stat-icon-wrapper-yellow">
+                <Smile size={22} className="stat-yellow-icon" />
+              </div>
+              <div className="stat-numbers-details">
+                <h3>1200+</h3>
+                <h4>Happy Subscribers</h4>
+                <p>Across Kolhapur</p>
+              </div>
+            </div>
+
+            <div className="trust-stat-col-item">
+              <div className="stat-icon-wrapper-orange">
+                <Bike size={22} className="stat-orange-icon" />
+              </div>
+              <div className="stat-numbers-details">
+                <h3>99%</h3>
+                <h4>Delivery Success</h4>
+                <p>On-time delivery</p>
+              </div>
+            </div>
+
+            <div className="trust-stat-col-item">
+              <div className="stat-icon-wrapper-star-orange">
+                <Star size={20} fill="#FF6B00" stroke="none" className="stat-star-icon" />
+              </div>
+              <div className="stat-numbers-details">
+                <h3>4.8★</h3>
+                <h4>Average Rating</h4>
+                <p>Average Rating</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="vertical-section-divider"></div>
+
+          <div className="trust-help-right-cta">
+            <h3 className="help-box-title">Need Help Choosing?</h3>
+            <p className="help-box-sub">Talk to our support team</p>
+            <button onClick={handleContactUs} className="btn-help-contact-orange">
+              <Headphones size={16} />
+              <span>Contact Us</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
   );

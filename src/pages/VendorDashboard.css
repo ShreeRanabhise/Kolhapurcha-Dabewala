@@ -1,0 +1,267 @@
+/* VendorDashboard.css */
+
+.kitchen-status-control {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toggle-switch-btn {
+  transition: all var(--transition-fast);
+}
+.toggle-switch-btn:hover {
+  transform: scale(1.05);
+}
+
+.btn-print-list {
+  background: white;
+  transition: all var(--transition-fast);
+}
+.btn-print-list:hover {
+  background-color: var(--color-gray-100);
+}
+
+/* Dispatch stats row */
+.dispatch-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.d-stat-box {
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.d-stat-box h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem 0;
+  line-height: 1;
+}
+
+.d-stat-box p {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.d-stat-box.green {
+  background-color: #ECFDF5;
+  border-color: #D1FAE5;
+}
+.d-stat-box.green h3 { color: #065F46; }
+
+.d-stat-box.red {
+  background-color: #FEF2F2;
+  border-color: #FEE2E2;
+}
+.d-stat-box.red h3 { color: #991B1B; }
+
+.d-stat-box.orange {
+  background-color: #FFF3EB;
+  border-color: #FFE0B2;
+}
+.d-stat-box.orange h3 { color: var(--color-orange); }
+
+.d-stat-box.grey {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-gray-200);
+}
+.d-stat-box.grey h3 { color: var(--color-gray-600); }
+
+/* Custom Tables styling */
+.dispatches-table-container, .subscribers-spreadsheet-wrapper {
+  overflow-x: auto;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: var(--radius-lg);
+  background: white;
+}
+
+.db-custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.db-custom-table th {
+  background-color: var(--color-off-white);
+  padding: 1.25rem 1.5rem;
+  font-weight: 700;
+  color: var(--color-gray-600);
+  border-bottom: 1.5px solid var(--color-gray-200);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.db-custom-table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-gray-200);
+  color: var(--color-gray-800);
+  vertical-align: middle;
+}
+
+.db-custom-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Chips/Tags */
+.tag {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tag.veg {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+}
+
+.tag.nonveg {
+  background-color: #FEF2F2;
+  color: #DC2626;
+}
+
+.badge-slot {
+  display: inline-block;
+  background-color: #E3F2FD;
+  color: #1565C0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+}
+
+/* Dispatch status checklist action buttons */
+.status-dispatch-btn {
+  border: 1.5px solid transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  width: 100%;
+  max-width: 180px;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.status-dispatch-btn.preparing {
+  background-color: #FEF9C3;
+  color: #713F12;
+  border-color: #FEF08A;
+}
+.status-dispatch-btn.preparing:hover {
+  background-color: #FEF08A;
+  transform: translateY(-1px);
+}
+
+.status-dispatch-btn.dispatched {
+  background-color: #DBEAFE;
+  color: #1E40AF;
+  border-color: #BFDBFE;
+}
+.status-dispatch-btn.dispatched:hover {
+  background-color: #BFDBFE;
+  transform: translateY(-1px);
+}
+
+.status-dispatch-btn.delivered {
+  background-color: #D1FAE5;
+  color: #065F46;
+  border-color: #A7F3D0;
+  cursor: default; /* Delivers can reset on click but indicates final checkpoint */
+}
+
+/* Payout stats */
+.earnings-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.earning-stat-card {
+  background: white;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: var(--radius-xl);
+  padding: 2rem 1.75rem;
+}
+
+.earning-stat-card.highlighted {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  border-color: #A7F3D0;
+}
+
+.stat-card-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-gray-500);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.earning-stat-card h3 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* Document Badge */
+.doc-item {
+  background-color: white;
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* WhatsApp contact circle hover rules */
+.whatsapp-contact-link-circle {
+  transition: all var(--transition-fast);
+}
+.whatsapp-contact-link-circle:hover {
+  transform: scale(1.1);
+  background-color: #25D366 !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.25);
+}
+
+/* Responsive Grid Folding rules */
+@media (max-width: 1024px) {
+  .dispatch-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  
+  .earnings-summary-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .dispatch-stats-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Spinner Spin Animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
