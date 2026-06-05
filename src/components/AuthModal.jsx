@@ -100,9 +100,17 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess, initialPhone = '' }) => {
         targetPhone = '9876543210'; // Customer Role
         displayMessage = 'Login successful!';
       } else {
-        // Fallback for custom logins: allows testing custom credentials under Customer Role
-        targetPhone = '9876543210';
-        displayMessage = `Logged in as Customer: ${username}`;
+        // Validate against registered users
+        const userAccounts = JSON.parse(localStorage.getItem('userAccounts') || '[]');
+        const foundUser = userAccounts.find(u => u.username.toLowerCase() === cleanUser);
+        
+        if (foundUser) {
+          targetPhone = foundUser.phone;
+          displayMessage = `Logged in as Customer: ${foundUser.username}`;
+        } else {
+          setError('Invalid credentials or account not found. Please sign up first.');
+          return;
+        }
       }
 
       setSuccessMsg(displayMessage);
