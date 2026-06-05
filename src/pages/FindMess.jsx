@@ -4,6 +4,8 @@ import {
   Search, MapPin, Star, CheckCircle2, SlidersHorizontal, 
   RotateCcw, HelpCircle, UserPlus, Headphones, X, ChevronDown, Calendar, Bike, Heart
 } from 'lucide-react';
+import { db } from '../config/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 import './FindMess.css';
 
 // Load messes dynamically from local storage approvedVendors
@@ -12,28 +14,23 @@ const FindMess = () => {
   const [allMesses, setAllMesses] = useState([]);
 
   useEffect(() => {
-    const savedVendors = localStorage.getItem('approvedVendors');
-    if (savedVendors) {
-      try {
-        const parsed = JSON.parse(savedVendors);
-        // Map vendor properties to ensure fields match what FindMess expects
-        const mapped = parsed.map(vendor => ({
-          id: vendor.id || Date.now() + Math.random(),
-          name: vendor.name || vendor.messName || "Approved Mess",
-          area: vendor.area || "Shahupuri",
-          price: vendor.price || 2100,
-          rating: vendor.rating || 4.7,
-          isVeg: vendor.isVeg !== undefined ? vendor.isVeg : true,
-          isPremium: vendor.isPremium || false,
-          nearArea: vendor.nearArea || "Near College",
-          description: vendor.description || "Fresh home-style meals prepared daily with love and hygiene.",
-          image: vendor.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-        }));
-        setAllMesses(mapped);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    const unsub = onSnapshot(collection(db, 'vendors'), (snapshot) => {
+      const activeVendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(v => v.status === 'Active');
+      const mapped = activeVendors.map(vendor => ({
+        id: vendor.id || Date.now() + Math.random(),
+        name: vendor.name || vendor.messName || "Approved Mess",
+        area: vendor.area || "Shahupuri",
+        price: vendor.price || 2100,
+        rating: vendor.rating || 4.7,
+        isVeg: vendor.isVeg !== undefined ? vendor.isVeg : true,
+        isPremium: vendor.isPremium || vendor.selectedPlan?.includes('999') || vendor.plan?.includes('999') || false,
+        nearArea: vendor.nearArea || "Near College",
+        description: vendor.description || "Fresh home-style meals prepared daily with love and hygiene.",
+        image: vendor.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+      }));
+      setAllMesses(mapped);
+    });
+    return () => unsub();
   }, []);
 
 

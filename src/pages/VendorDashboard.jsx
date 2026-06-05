@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import './VendorDashboard.css';
 
 // Mock Subscriber Data feeding Shivaji/Suvarna Messes
@@ -28,15 +29,14 @@ const INITIAL_DISPATCHES = [
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
+  const { userRole, loading } = useAuth();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const phone = localStorage.getItem('userPhone');
-    if (phone !== '8888888888') {
-      localStorage.setItem('triggerLogin', 'vendor');
+    if (!loading && userRole !== 'vendor') {
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, userRole, loading]);
 
   const [activeTab, setActiveTab] = useState('dispatches'); // 'dispatches', 'subscribers', 'earnings', 'profile'
   const [subscribers, setSubscribers] = useState(INITIAL_SUBSCRIBERS);

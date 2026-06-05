@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { Menu, X, Heart, Bell, User, LogOut, ChevronDown } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthModal from './AuthModal';
+import { useAuth } from '../hooks/useAuth';
 import './Header.css';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [userPhone, setUserPhone] = useState(localStorage.getItem('userPhone') || '');
-  const [userName, setUserName] = useState(localStorage.getItem('userName') || '');
+  const { currentUser, userRole, logout } = useAuth();
   const [authPrefillPhone, setAuthPrefillPhone] = useState('');
   const [likedMesses, setLikedMesses] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -39,15 +39,14 @@ const Header = () => {
       }
       
       // Default notifications based on logged-in role
-      const phone = localStorage.getItem('userPhone') || '';
       let defaults = [];
-      if (phone === '9999999999') {
+      if (userRole === 'admin') {
         defaults = [
           { id: 1, title: "New Mess Application 📝", desc: "Mauli Tiffin Service applied as partner.", time: "5 mins ago", read: false, type: "info" },
           { id: 2, title: "Verification Scheduled 📅", desc: "Kitchen check for Gharandaaz Meals at 2 PM.", time: "1 hour ago", read: false, type: "info" },
           { id: 3, title: "Report Filed ⚠️", desc: "A subscriber reported a late delivery.", time: "1 day ago", read: true, type: "warning" }
         ];
-      } else if (phone === '8888888888') {
+      } else if (userRole === 'vendor') {
         defaults = [
           { id: 1, title: "New Subscriber! 🎉", desc: "Rohan Patil subscribed to Veg Plan.", time: "10 mins ago", read: false, type: "success" },
           { id: 2, title: "Payment Disbursed 💰", desc: "Weekly payout of ₹12,500 settled.", time: "4 hours ago", read: false, type: "payment" },
@@ -92,7 +91,7 @@ const Header = () => {
       window.removeEventListener('notifications-updated', handleNotifsUpdated);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [userPhone]);
+  }, [userRole]);
 
   const handleRemoveFavorite = (id, e) => {
     e.stopPropagation();
@@ -143,24 +142,12 @@ const Header = () => {
     }
   }, [navigate]);
 
-  const handleLoginSuccess = (phone, name) => {
-    localStorage.setItem('userPhone', phone);
-    if (name) {
-      localStorage.setItem('userName', name);
-      setUserName(name);
-    }
-    setUserPhone(phone);
+  const handleLoginSuccess = () => {
     setIsAuthOpen(false);
     setAuthPrefillPhone('');
     
-    // Role-based smart redirection
-    if (phone === '9999999999') {
-      navigate('/dashboard/admin');
-    } else if (phone === '8888888888') {
-      navigate('/dashboard/vendor');
-    } else {
-      navigate('/dashboard/user');
-    }
+    // AuthContext will handle state updates via onAuthStateChanged
+    // We let the useEffect trigger route changes if necessary or let the user click
   };
 
   const handleCloseAuth = () => {
@@ -168,24 +155,25 @@ const Header = () => {
     setAuthPrefillPhone('');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('userName');
-    setUserPhone('');
-    setUserName('');
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
   const getDashboardRoute = () => {
-    if (userPhone === '9999999999') return '/dashboard/admin';
-    if (userPhone === '8888888888') return '/dashboard/vendor';
-    return '/dashboard/user';
+    if (userRole === 'admin') return '/admin';
+    if (userRole === 'vendor') return '/vendor';
+    return '/dashboard';
   };
 
   const getProfileButtonText = () => {
-    if (userName) return userName;
-    if (userPhone === '9999999999') return 'Admin Panel';
-    if (userPhone === '8888888888') return 'Vendor Panel';
+    if (currentUser?.displayName) return currentUser.displayName;
+    if (userRole === 'admin') return 'Admin Panel';
+    if (userRole === 'vendor') return 'Vendor Panel';
     return 'My Account';
   };
 
@@ -328,7 +316,7 @@ const Header = () => {
               )}
             </div>
  
-            {userPhone ? (
+            {currentUser ? (
               <div className="user-logged-in-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Link to={getDashboardRoute()} className="btn btn-get-started" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <User size={15} /> {getProfileButtonText()} <ChevronDown size={13} />

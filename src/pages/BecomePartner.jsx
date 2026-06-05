@@ -4,8 +4,10 @@ import {
   FileText, ShieldCheck, Store, Award, 
   Eye, Star, Smartphone, Settings, 
   ChevronDown, Phone, Mail, Building, 
-  MapPin, Check, Headphones, ArrowRight, X, ChefHat, Bike, Shield, User
+  MapPin, Check, Headphones, ArrowRight, X, ChefHat, Bike, Shield, User, Loader
 } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import './BecomePartner.css';
 
 const BecomePartner = () => {
@@ -27,6 +29,7 @@ const BecomePartner = () => {
   const [photoBase64, setPhotoBase64] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [vendorId, setVendorId] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -92,71 +95,37 @@ const BecomePartner = () => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Save vendor login credentials
-    const vendorAccounts = JSON.parse(localStorage.getItem('vendorAccounts') || '[]');
-    vendorAccounts.push({
-      vendorId: vendorId.trim(),
-      password: mobileNumber,
-      ownerName: ownerName.trim()
-    });
-    localStorage.setItem('vendorAccounts', JSON.stringify(vendorAccounts));
+    try {
+      const newApp = {
+        messName,
+        ownerName,
+        vendorId: vendorId.trim(),
+        mobileNumber,
+        email,
+        fssai: "FSSAI-" + Math.floor(10000000000000 + Math.random() * 90000000000000),
+        area: location,
+        status: "Pending",
+        plan: capacity.includes("2000+") ? "Growth Plan (₹999/mo)" : "Starter Plan (₹499/mo)",
+        price: capacity.includes("2000+") ? 2499 : capacity.includes("1000 - 2000") ? 2299 : 1999,
+        foodType: mealTypes,
+        description,
+        nearArea: location.toLowerCase().includes("university") || location.toLowerCase().includes("college") ? "Near College" : location.toLowerCase().includes("midc") || location.toLowerCase().includes("office") ? "Near Office" : "Near Hostel",
+        image: photoBase64 || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+        createdAt: serverTimestamp()
+      };
 
-    // 1. Save onboarding application to pendingVendorApplications for Admin Dashboard
-    const savedApps = localStorage.getItem('pendingVendorApplications');
-    let currentApps = [];
-    if (savedApps) {
-      try {
-        currentApps = JSON.parse(savedApps);
-      } catch (err) {
-        console.error(err);
-      }
+      await addDoc(collection(db, 'applications'), newApp);
+      setFormSubmitted(true);
+    } catch (err) {
+      console.error("Error submitting application: ", err);
+      alert("Failed to submit application. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    const newApp = {
-      id: Date.now(),
-      messName: messName,
-      ownerName: ownerName,
-      fssai: "FSSAI-" + Math.floor(10000000000000 + Math.random() * 90000000000000),
-      area: location,
-      status: "Pending",
-      plan: capacity.includes("2000+") ? "Growth Plan (₹999/mo)" : "Starter Plan (₹499/mo)",
-      price: capacity.includes("2000+") ? 2499 : capacity.includes("1000 - 2000") ? 2299 : 1999,
-      foodType: mealTypes,
-      description: description,
-      nearArea: location.toLowerCase().includes("university") || location.toLowerCase().includes("college") ? "Near College" : location.toLowerCase().includes("midc") || location.toLowerCase().includes("office") ? "Near Office" : "Near Hostel",
-      image: photoBase64 || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-    };
-    const updatedApps = [newApp, ...currentApps];
-    localStorage.setItem('pendingVendorApplications', JSON.stringify(updatedApps));
-
-    // 2. Add notification for Admin Panel
-    const savedNotifs = localStorage.getItem('notifications');
-    let currentNotifs = [];
-    if (savedNotifs) {
-      try {
-        currentNotifs = JSON.parse(savedNotifs);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    const newNotif = {
-      id: Date.now(),
-      title: "New Partner Request 🤝",
-      desc: `${messName} by ${ownerName} is pending verification.`,
-      time: "Just now",
-      read: false,
-      type: "info"
-    };
-    const updatedNotifs = [newNotif, ...currentNotifs];
-    localStorage.setItem('notifications', JSON.stringify(updatedNotifs));
-
-    // 3. Dispatch real-time custom event to update Header
-    window.dispatchEvent(new CustomEvent('notifications-updated', { detail: updatedNotifs }));
-
-    // 4. Show success screen
-    setFormSubmitted(true);
   };
 
   // Scroll to Form helper
@@ -801,8 +770,8 @@ const BecomePartner = () => {
                   </div>
 
                   {/* Submit Button */}
-                  <button type="submit" className="btn-form-submit-partner">
-                    Become a Partner →
+                  <button type="submit" className="btn-form-submit-partner" disabled={loading} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+                    {loading ? <><Loader size={18} className="animate-spin" /> Submitting...</> : "Submit Application"}
                   </button>
 
                   {/* Bottom secure footnote */}

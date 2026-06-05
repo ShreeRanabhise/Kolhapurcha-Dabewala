@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, MapPin, Users, Check, Flame, ArrowRight, LayoutGrid, Leaf, Drumstick, Wallet, Crown, ShieldCheck, Clock, Heart } from 'lucide-react';
+import { db } from '../config/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
 import './FeaturedMesses.css';
 
 const featuredMess = {
@@ -106,48 +108,45 @@ const FeaturedMesses = () => {
   };
 
   useEffect(() => {
-    let localApproved = [];
-    const saved = localStorage.getItem('approvedVendors');
-    if (saved) {
-      try {
-        localApproved = JSON.parse(saved).filter(m => m.id > 6);
-      } catch (e) {
-        console.error(e);
+    const unsub = onSnapshot(collection(db, 'vendors'), (snapshot) => {
+      const localApproved = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(m => m.status === 'Active');
+      
+      const premiumLocal = localApproved.filter(m => m.isPremium || (m.selectedPlan?.includes('999') || m.plan?.includes('999')));
+      
+      if (premiumLocal.length > 0) {
+        setPremiumMess({
+          id: premiumLocal[0].id,
+          name: premiumLocal[0].name || premiumLocal[0].messName,
+          location: `${premiumLocal[0].area}, Kolhapur`,
+          students: "0+",
+          rating: premiumLocal[0].rating || 5.0,
+          reviewsCount: "0",
+          type: premiumLocal[0].isVeg ? "Pure Veg" : "Veg & Non-Veg",
+          image: premiumLocal[0].image,
+          menu: premiumLocal[0].weeklyMenu?.Monday?.lunch ? [premiumLocal[0].weeklyMenu.Monday.lunch] : ["Homely Meals", "Fresh Delivery"],
+          pricePerDay: Math.round(premiumLocal[0].price / 30),
+          pricePerMonth: premiumLocal[0].price
+        });
+      } else {
+        setPremiumMess(null);
       }
-    }
-    const premiumLocal = localApproved.filter(m => m.isPremium || m.status === 'Active' && (m.selectedPlan?.includes('999') || m.plan?.includes('999')));
-    
-    if (premiumLocal.length > 0) {
-      setPremiumMess({
-        id: premiumLocal[0].id,
-        name: premiumLocal[0].name || premiumLocal[0].messName,
-        location: `${premiumLocal[0].area}, Kolhapur`,
-        students: "0+",
-        rating: premiumLocal[0].rating || 5.0,
-        reviewsCount: "0",
-        type: premiumLocal[0].isVeg ? "Pure Veg" : "Veg & Non-Veg",
-        image: premiumLocal[0].image,
-        menu: premiumLocal[0].weeklyMenu?.Monday?.lunch ? [premiumLocal[0].weeklyMenu.Monday.lunch] : ["Homely Meals", "Fresh Delivery"],
-        pricePerDay: Math.round(premiumLocal[0].price / 30),
-        pricePerMonth: premiumLocal[0].price
-      });
-    } else {
-      setPremiumMess(null);
-    }
 
-    setAllTrending(localApproved.map(vendor => ({
-      id: vendor.id,
-      name: vendor.name || vendor.messName || "Approved Mess",
-      location: `${vendor.area}, Kolhapur`,
-      students: "0+",
-      rating: vendor.rating || 4.7,
-      type: vendor.isVeg ? "Veg" : "Veg & Non-Veg",
-      price: `₹${vendor.price}`,
-      image: vendor.image,
-      isPremium: vendor.isPremium || vendor.selectedPlan?.includes('999') || vendor.plan?.includes('999'),
-      isVeg: vendor.isVeg,
-      status: vendor.status || 'Active'
-    })));
+      setAllTrending(localApproved.map(vendor => ({
+        id: vendor.id,
+        name: vendor.name || vendor.messName || "Approved Mess",
+        location: `${vendor.area}, Kolhapur`,
+        students: "0+",
+        rating: vendor.rating || 4.7,
+        type: vendor.isVeg ? "Veg" : "Veg & Non-Veg",
+        price: `₹${vendor.price}`,
+        image: vendor.image,
+        isPremium: vendor.isPremium || vendor.selectedPlan?.includes('999') || vendor.plan?.includes('999'),
+        isVeg: vendor.isVeg,
+        status: vendor.status || 'Active'
+      })));
+    });
+    
+    return () => unsub();
   }, []);
 
   // Load rates dynamically (updated by vendor partner inside dashboard)

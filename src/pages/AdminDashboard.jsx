@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { db } from '../config/firebase';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import './AdminDashboard.css';
 
 // Mock Onboarding Applications
@@ -23,73 +26,59 @@ const INITIAL_DISPUTES = [
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { userRole, loading } = useAuth();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const phone = localStorage.getItem('userPhone');
-    if (phone !== '9999999999') {
-      localStorage.setItem('triggerLogin', 'admin');
+    if (!loading && userRole !== 'admin') {
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, userRole, loading]);
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'approvals', 'disputes', 'pricing', 'vendors'
-  const [applications, setApplications] = useState(() => {
-    const localApps = localStorage.getItem('pendingVendorApplications')
-      ? JSON.parse(localStorage.getItem('pendingVendorApplications')).filter(app => app.id !== 401 && app.id !== 402)
-      : [];
-    return localApps;
-  });
+  const [activeTab, setActiveTab] = useState('overview'); 
+  const [applications, setApplications] = useState([]);
   const [disputes, setDisputes] = useState(INITIAL_DISPUTES);
-
-  const [vendors, setVendors] = useState(() => {
-    const saved = localStorage.getItem('approvedVendors');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved).filter(v => v.id > 6);
-        localStorage.setItem('approvedVendors', JSON.stringify(parsed));
-        return parsed;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    localStorage.setItem('approvedVendors', JSON.stringify([]));
-    return [];
-  });
-
-  const [usersList, setUsersList] = useState(() => {
-    const saved = localStorage.getItem('userAccounts');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    // Seed initial mock users if none exist
-    const mockUsers = [
-      { username: 'rahul_patil', email: 'rahul.patil@gmail.com', phone: '9822123456', registeredAt: '2026-05-30T10:12:00.000Z' },
-      { username: 'sneha_k', email: 'sneha.kulkarni@yahoo.com', phone: '9011234567', registeredAt: '2026-05-31T09:45:00.000Z' },
-      { username: 'amit_sharma', email: 'amit.sharma@outlook.com', phone: '9158345678', registeredAt: '2026-06-01T04:20:00.000Z' }
-    ];
-    localStorage.setItem('userAccounts', JSON.stringify(mockUsers));
-    return mockUsers;
-  });
+  const [vendors, setVendors] = useState([]);
+  const [usersList, setUsersList] = useState([]);
 
   // Platform global counts
   const [totalRevenue, setTotalRevenue] = useState(345200);
   const [totalSubscribers, setTotalSubscribers] = useState(1240);
-  const [activeVendors, setActiveVendors] = useState(() => vendors.length);
+  const [activeVendors, setActiveVendors] = useState(0);
 
   // Global platform pricing rate states
-  const [dailyRate, setDailyRate] = useState(() => {
-    return localStorage.getItem('vendorDailyRate') ? parseInt(localStorage.getItem('vendorDailyRate')) : 70;
-  });
-  const [monthlyRate, setMonthlyRate] = useState(() => {
-    return localStorage.getItem('vendorMonthlyRate') ? parseInt(localStorage.getItem('vendorMonthlyRate')) : 2100;
-  });
+  const [dailyRate, setDailyRate] = useState(70);
+  const [monthlyRate, setMonthlyRate] = useState(2100);
   const [isSavingRates, setIsSavingRates] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (userRole !== 'admin') return;
+
+    const unsubApps = onSnapshot(collection(db, 'applications'), (snapshot) => {
+      setApplications(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    const unsubVendors = onSnapshot(collection(db, 'vendors'), (snapshot) => {
+      const v = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setVendors(v);
+      setActiveVendors(v.filter(x => x.status === 'Active').length);
+    });
+
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'globalPricing'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.dailyRate) setDailyRate(data.dailyRate);
+        if (data.monthlyRate) setMonthlyRate(data.monthlyRate);
+      }
+    });
+
+    return () => {
+      unsubApps();
+      unsubVendors();
+      unsubSettings();
+    };
+  }, [userRole]);
 
 
 
@@ -102,39 +91,35 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSaveRates = (e) => {
+  const handleSaveRates = async (e) => {
     e.preventDefault();
     setIsSavingRates(true);
-    localStorage.setItem('vendorDailyRate', dailyRate);
-    localStorage.setItem('vendorMonthlyRate', monthlyRate);
     
-    // Simulate database write
-    setTimeout(() => {
+    try {
+      await setDoc(doc(db, 'settings', 'globalPricing'), {
+        dailyRate,
+        monthlyRate
+      });
       setIsSavingRates(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    }, 1000);
+    } catch (err) {
+      console.error(err);
+      setIsSavingRates(false);
+    }
   };
 
   // Handle partner onboarding approvals
-  const handleApprovePartner = (id, approved = true) => {
+  const handleApprovePartner = async (id, approved = true) => {
     const targetApp = applications.find(app => app.id === id);
-    setApplications(applications.filter(app => app.id !== id));
+    if (!targetApp) return;
 
-    const localApps = localStorage.getItem('pendingVendorApplications')
-      ? JSON.parse(localStorage.getItem('pendingVendorApplications'))
-      : [];
-    localStorage.setItem('pendingVendorApplications', JSON.stringify(localApps.filter(app => app.id !== id)));
-
-    if (approved && targetApp) {
-      setActiveVendors(prev => prev + 1);
-
+    if (approved) {
       const isGrowthPlan = targetApp.plan?.includes('999');
       const newApprovedVendor = {
-        id: targetApp.id,
         name: targetApp.messName,
         ownerName: targetApp.ownerName,
-        area: targetApp.area,
+        area: targetApp.area || targetApp.location || "Rajarampuri",
         price: targetApp.price || 2100,
         rating: 4.8,
         reviews: 1,
@@ -145,52 +130,55 @@ const AdminDashboard = () => {
         onTimeRate: 100,
         isPopular: false,
         isPremium: isGrowthPlan,
-        selectedPlan: targetApp.plan,
+        selectedPlan: targetApp.plan || "",
         description: targetApp.description || "Authentic home-style food prepared fresh daily with local ingredients.",
         nearArea: targetApp.nearArea || "Near College",
         image: targetApp.image || "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
+        status: "Active",
+        vendorId: targetApp.vendorId || id,
         coords: { top: `${30 + Math.random() * 40}%`, left: `${20 + Math.random() * 60}%` }
       };
 
-      const existingApproved = localStorage.getItem('approvedVendors')
-        ? JSON.parse(localStorage.getItem('approvedVendors'))
-        : [];
-      const updatedApproved = [...existingApproved, { ...newApprovedVendor, status: "Active" }];
-      localStorage.setItem('approvedVendors', JSON.stringify(updatedApproved));
-      setVendors(updatedApproved);
-      setActiveVendors(updatedApproved.length);
-
-      if (isGrowthPlan) {
-        alert(`Growth Plan Partner Approved! "${targetApp.messName}" is now active and listed in the Featured Mess section with a Premium badge.`);
-      } else {
-        alert(`Starter Partner Approved! "${targetApp.messName}" is now active in the directory list.`);
+      try {
+        await setDoc(doc(db, 'vendors', targetApp.vendorId || id), newApprovedVendor);
+        await deleteDoc(doc(db, 'applications', id));
+        if (isGrowthPlan) {
+          alert(`Growth Plan Partner Approved! "${targetApp.messName}" is now active and listed in the Featured Mess section with a Premium badge.`);
+        } else {
+          alert(`Starter Partner Approved! "${targetApp.messName}" is now active in the directory list.`);
+        }
+      } catch (err) {
+        console.error(err);
       }
     } else {
-      alert("Vendor onboarding request rejected.");
-    }
-  };
-
-  const handleDeleteVendor = (id) => {
-    if (window.confirm("Are you sure you want to delete/remove this vendor permanently from the marketplace?")) {
-      const updated = vendors.filter(v => v.id !== id);
-      setVendors(updated);
-      localStorage.setItem('approvedVendors', JSON.stringify(updated));
-      setActiveVendors(updated.length);
-      alert("Vendor deleted successfully.");
-    }
-  };
-
-  const handleToggleHoldVendor = (id) => {
-    const updated = vendors.map(v => {
-      if (v.id === id) {
-        const newStatus = v.status === "On Hold" ? "Active" : "On Hold";
-        alert(`Vendor status changed to: ${newStatus}`);
-        return { ...v, status: newStatus };
+      try {
+        await deleteDoc(doc(db, 'applications', id));
+        alert("Vendor onboarding request rejected.");
+      } catch (err) {
+        console.error(err);
       }
-      return v;
-    });
-    setVendors(updated);
-    localStorage.setItem('approvedVendors', JSON.stringify(updated));
+    }
+  };
+
+  const handleDeleteVendor = async (id) => {
+    if (window.confirm("Are you sure you want to delete/remove this vendor permanently from the marketplace?")) {
+      try {
+        await deleteDoc(doc(db, 'vendors', id));
+        alert("Vendor deleted successfully.");
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const handleToggleHoldVendor = async (id, currentStatus) => {
+    const newStatus = currentStatus === "On Hold" ? "Active" : "On Hold";
+    try {
+      await updateDoc(doc(db, 'vendors', id), { status: newStatus });
+      alert(`Vendor status changed to: ${newStatus}`);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Handle dispute ticket resolution
@@ -483,7 +471,7 @@ const AdminDashboard = () => {
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                               <button
-                                onClick={() => handleToggleHoldVendor(v.id)}
+                                onClick={() => handleToggleHoldVendor(v.id, v.status)}
                                 className="btn-status-hold"
                                 style={{
                                   padding: '0.4rem 0.8rem',
