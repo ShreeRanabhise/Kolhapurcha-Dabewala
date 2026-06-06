@@ -177,12 +177,16 @@ const FindMess = () => {
     }
   };
 
-  const triggerSubscribe = (messName) => {
-    // Check if header button triggers exist
-    const triggerBtn = document.querySelector('.btn-get-started');
-    if (triggerBtn) {
-      triggerBtn.click();
-    }
+  const triggerSubscribe = (mess) => {
+    navigate('/checkout', { 
+      state: {
+        vendorName: mess.name,
+        vendorId: mess.id,
+        planName: mess.isPremium ? "Premium Plan" : "Standard Plan",
+        planType: "monthly",
+        price: mess.price || 2499
+      }
+    });
   };
 
   useEffect(() => {
@@ -529,7 +533,7 @@ const FindMess = () => {
                           View Details
                         </button>
                         <button 
-                          onClick={() => triggerSubscribe(mess.name)}
+                          onClick={() => triggerSubscribe(mess)}
                           className="btn-card-subscribe-solid"
                         >
                           Subscribe Now

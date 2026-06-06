@@ -1,30 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { createSubscription } from '../../services/firebaseService';
+import { initializeRazorpay, createSimulatedOrder, verifyPaymentAndComplete } from '../../services/paymentService';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 
 const Checkout = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
 
-  // Mock data for checkout, in a real app this comes from route state or context
-  const vendorName = "Aai's Kitchen";
-  const vendorId = "vendor_123";
-  const planType = "Lunch + Dinner";
-  const price = 3299;
+  // Data from previous screen, fallback to defaults
+  const { 
+    vendorName = "Aai's Kitchen", 
+    vendorId = "vendor_123", 
+    planName = "Monthly Combo", 
+    planType = "monthly", 
+    price = 3299 
+  } = location.state || {};
+
   const platformFee = Math.round(price * 0.08); // 8%
   const total = price + platformFee;
-
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
 
   const handlePayment = async () => {
     if (!currentUser) {
@@ -34,59 +31,82 @@ const Checkout = () => {
     }
 
     setLoading(true);
-    const res = await loadRazorpayScript();
+    const isReady = await initializeRazorpay();
 
-    if (!res) {
+    if (!isReady) {
       alert('Razorpay SDK failed to load. Are you online?');
       setLoading(false);
       return;
     }
 
-    // In a real app, you MUST call your backend to create an order and get the orderId
-    // For this mockup, we are bypassing the backend order creation for demonstration
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_YOUR_KEY_HERE", 
-      amount: total * 100, // Amount in paise
-      currency: "INR",
-      name: "Kolhapurcha Dabewala",
-      description: `${planType} Subscription for ${vendorName}`,
-      image: "/logo.png",
-      handler: async function (response) {
-        // Payment successful
-        try {
-          // Record subscription in Firestore
-          const subId = await createSubscription({
-            customerId: currentUser.uid,
-            vendorId: vendorId,
-            vendorName: vendorName,
-            planType: planType,
-            status: 'active',
-            startDate: new Date().toISOString(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(),
-            paymentRef: response.razorpay_payment_id,
-            amount: total
-          });
-          
-          alert(`Payment Successful! Subscription created: ${subId}`);
-          navigate('/dashboard');
-        } catch (error) {
-          console.error("Failed to create subscription:", error);
-          alert("Payment received but subscription creation failed. Contact support.");
-        }
-      },
-      prefill: {
-        name: currentUser.displayName || "Customer",
-        email: currentUser.email || "customer@example.com",
-        contact: "9999999999"
-      },
-      theme: {
-        color: "#7A1F1F"
-      }
-    };
+    try {
+      // 1. Create Simulated Order & Pending Payment Log
+      const paymentData = {
+        customerId: currentUser.uid,
+        vendorId: vendorId,
+        amount: total
+      };
+      
+      const { paymentDocId } = await createSimulatedOrder(paymentData);
 
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
-    setLoading(false);
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_YOUR_KEY_HERE", 
+        amount: total * 100, // Amount in paise
+        currency: "INR",
+        name: "Kolhapurcha Dabewala",
+        description: `${planName} Subscription for ${vendorName}`,
+        image: "/logo.png",
+        handler: async function (response) {
+          try {
+            // 2. Verify Payment
+            await verifyPaymentAndComplete(paymentDocId, response);
+
+            // 3. Create Active Subscription
+            const subRef = await addDoc(collection(db, 'subscriptions'), {
+              customerId: currentUser.uid,
+              vendorId: vendorId,
+              vendorName: vendorName,
+              planName: planName,
+              planType: planType,
+              amount: total,
+              status: 'active',
+              startDate: new Date().toISOString(),
+              endDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(),
+              mealsRemaining: planType.includes('monthly') ? 60 : 14,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+            
+            alert(`Payment Successful!`);
+            navigate('/dashboard');
+          } catch (error) {
+            console.error("Failed to complete subscription:", error);
+            alert("Payment received but subscription creation failed. Contact support.");
+          }
+        },
+        prefill: {
+          name: currentUser.displayName || "Customer",
+          email: currentUser.email || "customer@example.com",
+          contact: currentUser.phoneNumber || "9999999999"
+        },
+        theme: {
+          color: "#7A1F1F"
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      
+      paymentObject.on('payment.failed', function (response){
+        alert("Payment Failed. Reason: " + response.error.description);
+      });
+
+      paymentObject.open();
+    } catch (err) {
+      console.error(err);
+      alert("Error initializing payment.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,7 +119,7 @@ const Checkout = () => {
         <div className="flex justify-between items-center mb-4">
           <div>
             <h3 className="font-semibold text-lg">{vendorName}</h3>
-            <p className="text-gray-500">{planType} (30 Days)</p>
+            <p className="text-gray-500">{planName}</p>
           </div>
           <p className="font-bold">₹{price}</p>
         </div>
@@ -117,13 +137,13 @@ const Checkout = () => {
         <button 
           onClick={handlePayment} 
           disabled={loading}
-          className="btn btn-maroon w-full mt-8 py-3 text-lg"
+          className="btn btn-maroon w-full mt-8 py-3 text-lg rounded-xl shadow-md"
         >
           {loading ? 'Processing...' : `Pay ₹${total} Securely`}
         </button>
         
         <p className="text-center text-sm text-gray-400 mt-4 flex items-center justify-center gap-2">
-          <span>Secured by Razorpay</span>
+          <span>🔒 Secured by Razorpay</span>
         </p>
       </div>
     </div>

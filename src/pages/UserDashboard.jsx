@@ -1,651 +1,260 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Calendar, CreditCard, RefreshCw, Clock, MapPin, 
-  User, CheckCircle, AlertTriangle, ArrowRight, ShieldCheck, 
-  ChevronRight, Pause, Play, Edit3, Trash2, Wallet
+  Calendar, CreditCard, Clock, User, 
+  MapPin, CheckCircle, AlertTriangle, ShieldCheck, 
+  ChevronRight, FileText, Package
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { db } from '../config/firebase';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import './UserDashboard.css';
 
-// Swappable verified messes list
-const AVAILABLE_MESSES = [
-  { id: 1, name: "Suvarna Mess", price: 2199, rating: 4.8, type: "Pure Veg" },
-  { id: 2, name: "Sai Home Food", price: 2499, rating: 4.7, type: "Pure Veg" },
-  { id: 3, name: "Shivaji Student Mess", price: 1999, rating: 4.6, type: "Pure Veg" },
-  { id: 4, name: "Kolhapuri Tadka Mess", price: 2599, rating: 4.7, type: "Veg & Non-Veg" },
-  { id: 5, name: "Gharandaaz Executive Meals", price: 3299, rating: 4.9, type: "Pure Veg" }
-];
-
 const UserDashboard = () => {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState('scheduler'); // 'scheduler', 'subscription', 'wallet', 'history'
-  const [userPhone, setUserPhone] = useState('');
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'profile'
   
-  // Subscription Info States
-  const [currentMess, setCurrentMess] = useState(AVAILABLE_MESSES[0]); // Suvarna Mess
-  const [daysRemaining, setDaysRemaining] = useState(18);
-  const [timeSlot, setTimeSlot] = useState('Lunch (12:30 PM - 1:30 PM)');
-  const [address, setAddress] = useState('Flat 402, Shivneri Heights, Rajarampuri 4th Lane, Kolhapur');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [addressInput, setAddressInput] = useState(address);
-  
-  // Interactive Tiffin Scheduler States
-  const [pausedDates, setPausedDates] = useState([]); 
-  const [walletBalance, setWalletBalance] = useState(380);
-  const [showCalendarToast, setShowCalendarToast] = useState(null); // { message, type }
-
-  // Swap Mess states
-  const [selectedSwapTarget, setSelectedSwapTarget] = useState('');
-  const [showSwapConfirm, setShowSwapConfirm] = useState(false);
-  const [swapResult, setSwapResult] = useState(null);
+  // Data states
+  const [activeSubscription, setActiveSubscription] = useState(null);
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const sessionPhone = localStorage.getItem('userSessionPhone') || localStorage.getItem('userPhone');
-    if (!sessionPhone) {
-      localStorage.setItem('triggerLogin', 'user');
+    if (!currentUser) {
       navigate('/');
       return;
     }
-    setUserPhone(sessionPhone);
 
-    // 1. Load active subscription from localStorage
-    const activeSubs = JSON.parse(localStorage.getItem('activeSubscriptions') || '[]');
-    const userSub = activeSubs.find(sub => sub.userPhone === sessionPhone && sub.status === 'Active');
-    
-    if (userSub) {
-      setCurrentMess({
-        id: userSub.id,
-        name: userSub.messName,
-        price: userSub.price,
-        type: userSub.mealTime === 'Both' ? 'Lunch + Dinner' : userSub.mealTime + ' Only'
-      });
-      setTimeSlot(userSub.mealTime === 'Both' ? 'Lunch & Dinner' : userSub.mealTime === 'Lunch' ? 'Lunch (12:30 PM)' : 'Dinner (7:30 PM)');
-    }
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        // 1. Fetch active subscription
+        const subQuery = query(
+          collection(db, 'subscriptions'), 
+          where('customerId', '==', currentUser.uid),
+          where('status', '==', 'active')
+        );
+        const subSnapshot = await getDocs(subQuery);
+        if (!subSnapshot.empty) {
+          // Assume 1 active sub for now
+          setActiveSubscription({ id: subSnapshot.docs[0].id, ...subSnapshot.docs[0].data() });
+        }
 
-    // 2. Load wallet balance and paused dates specific to user
-    const savedWallet = localStorage.getItem(`wallet_${sessionPhone}`);
-    if (savedWallet) {
-      setWalletBalance(Number(savedWallet));
-    } else {
-      const defaultWallet = 380;
-      setWalletBalance(defaultWallet);
-      localStorage.setItem(`wallet_${sessionPhone}`, String(defaultWallet));
-    }
+        // 2. Fetch payments history
+        const payQuery = query(
+          collection(db, 'payments'),
+          where('customerId', '==', currentUser.uid),
+          orderBy('createdAt', 'desc')
+        );
+        const paySnapshot = await getDocs(payQuery);
+        setPayments(paySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        
+      } catch (err) {
+        console.error("Error fetching dashboard data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const savedPaused = localStorage.getItem(`paused_dates_${sessionPhone}`);
-    if (savedPaused) {
-      const parsed = JSON.parse(savedPaused);
-      setPausedDates(parsed);
-      setDaysRemaining(30 - parsed.length);
-    } else {
-      const defaultPaused = ['2026-06-05', '2026-06-06'];
-      setPausedDates(defaultPaused);
-      setDaysRemaining(30 - defaultPaused.length);
-      localStorage.setItem(`paused_dates_${sessionPhone}`, JSON.stringify(defaultPaused));
-    }
+    fetchDashboardData();
+  }, [currentUser, navigate]);
 
-    // 3. Load Address
-    const savedAddress = localStorage.getItem(`address_${sessionPhone}`);
-    if (savedAddress) {
-      setAddress(savedAddress);
-      setAddressInput(savedAddress);
-    } else {
-      const defaultAddress = 'Flat 402, Shivneri Heights, Rajarampuri 4th Lane, Kolhapur';
-      setAddress(defaultAddress);
-      setAddressInput(defaultAddress);
-      localStorage.setItem(`address_${sessionPhone}`, defaultAddress);
-    }
-  }, [navigate]);
-
-  // Address edit handler
-  const saveAddress = () => {
-    setAddress(addressInput);
-    setIsEditingAddress(false);
-    localStorage.setItem(`address_${userPhone}`, addressInput);
-    triggerToast('Delivery address updated successfully.', 'success');
-  };
-
-  const triggerToast = (msg, type = 'success') => {
-    setShowCalendarToast({ message: msg, type });
-    setTimeout(() => setShowCalendarToast(null), 3000);
-  };
-
-  // Toggle calendar dates to pause/resume delivery
-  const toggleDatePause = (dateString) => {
-    const isPaused = pausedDates.includes(dateString);
-    const dailyRefund = Math.round(currentMess.price / 30);
-    const phoneKey = userPhone || '9876543210';
-
-    let updatedPaused;
-    let updatedWallet;
-    let updatedDays;
-
-    if (isPaused) {
-      // Resume delivery
-      updatedPaused = pausedDates.filter(d => d !== dateString);
-      updatedWallet = Math.max(0, walletBalance - dailyRefund);
-      updatedDays = daysRemaining + 1;
-      triggerToast(`Delivery resumed for ${formatDate(dateString)}. ₹${dailyRefund} adjusted.`, 'info');
-    } else {
-      // Pause delivery
-      updatedPaused = [...pausedDates, dateString];
-      updatedWallet = walletBalance + dailyRefund;
-      updatedDays = daysRemaining - 1;
-      triggerToast(`Tiffin paused for ${formatDate(dateString)}. ₹${dailyRefund} credited to Wallet.`, 'success');
-    }
-
-    setPausedDates(updatedPaused);
-    setWalletBalance(updatedWallet);
-    setDaysRemaining(updatedDays);
-
-    // Save to localStorage
-    localStorage.setItem(`paused_dates_${phoneKey}`, JSON.stringify(updatedPaused));
-    localStorage.setItem(`wallet_${phoneKey}`, String(updatedWallet));
-  };
-
-  // Handle Mess Swapping calculation
-  const handleSwapSelection = (e) => {
-    const targetId = parseInt(e.target.value);
-    const target = AVAILABLE_MESSES.find(m => m.id === targetId);
-    if (!target) return;
-
-    setSelectedSwapTarget(target);
-
-    // Swap adjustments:
-    const currentDaily = currentMess.price / 30;
-    const targetDaily = target.price / 30;
-    const remainingValue = daysRemaining * currentDaily;
-    const newDays = Math.round(remainingValue / targetDaily);
-
-    setSwapResult({
-      previousDays: daysRemaining,
-      newDays: newDays,
-      priceDiff: target.price - currentMess.price,
-      valueChange: Math.round(remainingValue)
-    });
-  };
-
-  const confirmSwap = () => {
-    if (!selectedSwapTarget || !swapResult) return;
-    setCurrentMess(selectedSwapTarget);
-    setDaysRemaining(swapResult.newDays);
-    setSelectedSwapTarget('');
-    setSwapResult(null);
-    setShowSwapConfirm(false);
-
-    // Update inside activeSubscriptions in localStorage
-    const activeSubs = JSON.parse(localStorage.getItem('activeSubscriptions') || '[]');
-    const userSubIdx = activeSubs.findIndex(sub => sub.userPhone === userPhone && sub.status === 'Active');
-    if (userSubIdx > -1) {
-      activeSubs[userSubIdx].messName = selectedSwapTarget.name;
-      activeSubs[userSubIdx].price = selectedSwapTarget.price;
-      localStorage.setItem('activeSubscriptions', JSON.stringify(activeSubs));
-    }
-
-    triggerToast(`Switched mess provider to ${selectedSwapTarget.name}!`, 'success');
-  };
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-  };
-
-  // Calendar dates generator for June 2026
-  const getJune2026Dates = () => {
-    const dates = [];
-    for (let day = 1; day <= 30; day++) {
-      const dayStr = day < 10 ? `0${day}` : `${day}`;
-      dates.push(`2026-06-${dayStr}`);
-    }
-    return dates;
-  };
-
-  const juneDates = getJune2026Dates();
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-[#FFF8F0]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-maroon"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="dashboard-page">
-      <div className="container dashboard-container">
+    <div className="dashboard-page bg-[#FFF8F0] min-h-screen pt-24 pb-12">
+      <div className="container max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
         
         {/* SIDEBAR NAVIGATION */}
-        <div className="db-sidebar glassmorphism">
-          <div className="db-user-profile">
-            <div className="db-user-avatar">
-              <User size={32} />
+        <div className="w-full md:w-64 shrink-0">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="bg-orange-100 p-3 rounded-full text-orange-500">
+                <User size={24} />
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-800">{currentUser?.displayName || 'Subscriber'}</h4>
+                <p className="text-sm text-gray-500">{currentUser?.phoneNumber || currentUser?.email}</p>
+              </div>
             </div>
-            <div className="db-user-info">
-              <h4>Active Subscriber</h4>
-              <p>+91 {userPhone}</p>
-            </div>
+            
+            <nav className="flex flex-col gap-2">
+              <button 
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'overview' ? 'bg-maroon/10 text-maroon font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setActiveTab('overview')}
+              >
+                <Package size={18} /> Overview
+              </button>
+              <button 
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'history' ? 'bg-maroon/10 text-maroon font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setActiveTab('history')}
+              >
+                <FileText size={18} /> Billing History
+              </button>
+              <button 
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${activeTab === 'profile' ? 'bg-maroon/10 text-maroon font-semibold' : 'text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setActiveTab('profile')}
+              >
+                <User size={18} /> Profile Settings
+              </button>
+            </nav>
           </div>
-          <hr className="db-divider" />
-          <nav className="db-nav-links">
-            <button 
-              className={`db-tab-btn ${activeTab === 'scheduler' ? 'active' : ''}`}
-              onClick={() => setActiveTab('scheduler')}
-            >
-              <Calendar size={18} /> Tiffin Scheduler
-            </button>
-            <button 
-              className={`db-tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
-              onClick={() => setActiveTab('subscription')}
-            >
-              <RefreshCw size={18} /> Swap Mess Partner
-            </button>
-            <button 
-              className={`db-tab-btn ${activeTab === 'wallet' ? 'active' : ''}`}
-              onClick={() => setActiveTab('wallet')}
-            >
-              <CreditCard size={18} /> Wallet & Statements
-            </button>
-            <button 
-              className={`db-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-              onClick={() => setActiveTab('history')}
-            >
-              <Clock size={18} /> Delivery History
-            </button>
-          </nav>
         </div>
 
         {/* MAIN PANEL CONTENT */}
-        <div className="db-content-panel">
+        <div className="flex-1">
           <AnimatePresence mode="wait">
             
-            {/* TAB 1: CALENDAR TIFFIN SCHEDULER */}
-            {activeTab === 'scheduler' && (
+            {/* TAB 1: OVERVIEW */}
+            {activeTab === 'overview' && (
               <motion.div
-                key="scheduler"
+                key="overview"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
-                className="db-panel-card"
+                className="space-y-6"
               >
-                <div className="panel-header-row">
-                  <div>
-                    <h2>Tiffin Scheduler Calendar</h2>
-                    <p>Click on calendar dates below to pause tiffin delivery. Paused meals credit money directly to your wallet.</p>
-                  </div>
-                  <div className="days-counter-badge glassmorphism">
-                    <span>Days Remaining:</span>
-                    <strong>{daysRemaining} Days</strong>
-                  </div>
-                </div>
-
-                {/* Sub info grid */}
-                <div className="sub-quick-grid">
-                  <div className="quick-info-box">
-                    <MapPin size={18} className="text-secondary" />
-                    <div>
-                      <h5>Deliver To:</h5>
-                      {isEditingAddress ? (
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-                          <input 
-                            type="text" 
-                            value={addressInput} 
-                            onChange={(e) => setAddressInput(e.target.value)} 
-                            className="db-inline-input"
-                          />
-                          <button onClick={saveAddress} className="btn-save-inline">Save</button>
-                        </div>
-                      ) : (
-                        <p>{address} <button onClick={() => setIsEditingAddress(true)} className="edit-inline-btn"><Edit3 size={12}/></button></p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="quick-info-box">
-                    <Clock size={18} className="text-secondary" />
-                    <div>
-                      <h5>Delivery Slot:</h5>
-                      <p>{timeSlot}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Calendar Layout */}
-                <div className="db-calendar-wrapper">
-                  <div className="calendar-month-indicator">
-                    <h3>June 2026</h3>
-                    <div className="calendar-legends">
-                      <span className="legend"><span className="legend-dot active"></span> Delivery</span>
-                      <span className="legend"><span className="legend-dot paused"></span> Paused (Credited)</span>
-                    </div>
-                  </div>
-
-                  <div className="calendar-days-header">
-                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-                  </div>
-                  
-                  <div className="calendar-grid">
-                    {/* Empty cells to pad for June 2026 starting on a Monday (1 cell padding for Sunday) */}
-                    <div className="calendar-day empty"></div>
-                    
-                    {juneDates.map((dateStr, idx) => {
-                      const dayNumber = idx + 1;
-                      const isPaused = pausedDates.includes(dateStr);
-                      // Let's assume past days are before June 5, 2026
-                      const isPast = dayNumber < 5;
-
-                      return (
-                        <button
-                          key={dateStr}
-                          className={`calendar-day ${isPast ? 'past' : ''} ${isPaused ? 'paused' : 'delivering'}`}
-                          disabled={isPast}
-                          onClick={() => toggleDatePause(dateStr)}
-                        >
-                          <span className="day-number">{dayNumber}</span>
-                          <span className="day-status-text">
-                            {isPast ? 'Delivered' : isPaused ? 'Paused (+₹73)' : 'Deliver'}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Floating Action Toast notifications */}
-                {showCalendarToast && (
-                  <div className={`calendar-toast ${showCalendarToast.type}`}>
-                    <CheckCircle size={16} />
-                    <span>{showCalendarToast.message}</span>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* TAB 2: SWAP MESS PARTNER */}
-            {activeTab === 'subscription' && (
-              <motion.div
-                key="subscription"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="db-panel-card"
-              >
-                <h2>Swap Mess Partner</h2>
-                <p>Transfer your active subscription remaining balance to another verified local provider instantly. Remaining days will be automatically calculated.</p>
-
-                <div className="swap-messes-comparison-deck">
-                  {/* Left card: Current partner */}
-                  <div className="swap-partner-card current">
-                    <div className="card-badge current-label">CURRENT PROVIDER</div>
-                    <h3>{currentMess.name}</h3>
-                    <div className="card-sub-meta">
-                      <span>Rate: ₹{currentMess.price}/month</span>
-                      <span>Type: {currentMess.type}</span>
-                    </div>
-                    <div className="card-days-status">
-                      <div className="status-label">Subscription Value Left:</div>
-                      <div className="status-amount">₹{Math.round(daysRemaining * (currentMess.price / 30))}</div>
-                      <p>Based on {daysRemaining} days left at ₹{Math.round(currentMess.price/30)}/day</p>
-                    </div>
-                  </div>
-
-                  {/* Icon */}
-                  <div className="swap-arrow-icon">
-                    <RefreshCw size={24} />
-                  </div>
-
-                  {/* Right card: Swap options selection */}
-                  <div className="swap-partner-card select">
-                    <div className="status-label">Select New Provider:</div>
-                    <select 
-                      className="db-select-dropdown" 
-                      onChange={handleSwapSelection}
-                      defaultValue=""
-                    >
-                      <option value="" disabled>-- Select Tiffin Vendor --</option>
-                      {AVAILABLE_MESSES.filter(m => m.id !== currentMess.id).map(mess => (
-                        <option key={mess.id} value={mess.id}>
-                          {mess.name} (₹{mess.price}/mo — {mess.type})
-                        </option>
-                      ))}
-                    </select>
-
-                    {selectedSwapTarget ? (
-                      <div className="target-preview-metrics animate-fade-in" style={{ marginTop: '1.5rem' }}>
-                        <h3>{selectedSwapTarget.name}</h3>
-                        <div className="card-sub-meta">
-                          <span>Rate: ₹{selectedSwapTarget.price}/month</span>
-                          <span>Rating: ★ {selectedSwapTarget.rating}</span>
-                        </div>
-                        <div className="comparison-math-box">
-                          <div className="math-row">
-                            <span>Your Remaining Balance:</span>
-                            <strong>₹{swapResult.valueChange}</strong>
-                          </div>
-                          <div className="math-row">
-                            <span>New Daily Rate:</span>
-                            <strong>₹{Math.round(selectedSwapTarget.price/30)}/day</strong>
-                          </div>
-                          <hr />
-                          <div className="math-row highlight">
-                            <span>New Plan Days:</span>
-                            <strong className="text-secondary">{swapResult.newDays} Days</strong>
-                          </div>
-                          <p className="math-footnote">
-                            *Plan adjusted from {swapResult.previousDays} to {swapResult.newDays} days due to price shift.
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="swap-placeholder-box">
-                        <AlertTriangle size={24} className="text-secondary" />
-                        <p>Please select a new mess partner above to compare calculations.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {selectedSwapTarget && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-                    <button onClick={() => setShowSwapConfirm(true)} className="btn btn-primary btn-swap-action">
-                      Proceed to Transfer Subscription <ChevronRight size={18} />
-                    </button>
-                  </div>
-                )}
-
-                {/* Confirm swap modal overlay */}
-                {showSwapConfirm && (
-                  <div className="auth-overlay">
-                    <div className="auth-backdrop" onClick={() => setShowSwapConfirm(false)}></div>
-                    <div className="auth-modal-card glassmorphism text-center" style={{ maxWidth: '400px' }}>
-                      <div className="auth-logo-pill" style={{ marginBottom: '1.5rem' }}>👑 Secure Swap</div>
-                      <h3 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '1rem' }}>Confirm Subscription Swap</h3>
-                      <p style={{ fontSize: '0.95rem', color: '#666', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-                        You are changing your daily tiffin provider to <strong>{selectedSwapTarget.name}</strong>. Your remaining plan length will adjust to <strong>{swapResult.newDays} days</strong>.
-                      </p>
-                      <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button onClick={() => setShowSwapConfirm(false)} className="btn btn-outline w-full" style={{ border: '1px solid #CCC', color: '#666' }}>Cancel</button>
-                        <button onClick={confirmSwap} className="btn btn-primary w-full" style={{ background: '#7A1F1F' }}>Confirm Swap</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* TAB 3: WALLET & STATEMENTS */}
-            {activeTab === 'wallet' && (
-              <motion.div
-                key="wallet"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="db-panel-card"
-              >
-                <h2>Wallet & Transactions</h2>
-                <p>Track your paused credits, subscription adjustments, and refer & earn bonuses.</p>
-
-                <div className="wallet-card-grid">
-                  {/* Premium Bank Card Layout */}
-                  <div className="premium-wallet-card">
-                    <div className="card-chip-row">
-                      <Wallet size={36} color="rgba(255,255,255,0.8)" />
-                      <span className="card-brand-label">DABEWALA PAY</span>
-                    </div>
-                    <div className="card-balance-display">
-                      <p>WALLET BALANCE</p>
-                      <h3>₹{walletBalance.toLocaleString()}</h3>
-                    </div>
-                    <div className="card-user-details-row">
+                <h2 className="text-2xl font-bold text-gray-800">Welcome Back!</h2>
+                
+                {activeSubscription ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-8 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-bl-full -z-10"></div>
+                    <div className="flex justify-between items-start mb-6">
                       <div>
-                        <p>SUBSCRIBER</p>
-                        <h4>+91 {userPhone.substring(0,5)}*****</h4>
+                        <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">
+                          Active Plan
+                        </span>
+                        <h3 className="text-2xl font-bold text-gray-900">{activeSubscription.planName}</h3>
+                        <p className="text-gray-500 mt-1">Provider: <span className="font-semibold text-gray-800">{activeSubscription.vendorName || "Verified Mess"}</span></p>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p>EXPIRES</p>
-                        <h4>06/2028</h4>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">Meals Remaining</p>
+                        <p className="text-4xl font-black text-maroon">{activeSubscription.mealsRemaining}</p>
                       </div>
                     </div>
-                  </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Started On</p>
+                        <p className="font-semibold">{new Date(activeSubscription.startDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Expires On</p>
+                        <p className="font-semibold">{new Date(activeSubscription.endDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
 
-                  {/* Wallet quick CTAs */}
-                  <div className="wallet-quick-actions glassmorphism">
-                    <h3>Quick Cashout</h3>
-                    <p>Refund your wallet balance directly to your linked UPI address or bank account instantly.</p>
-                    <button className="btn btn-primary wallet-cashout-btn" disabled={walletBalance === 0}>
-                      Cashout Balance to UPI
+                    <div className="mt-8 flex gap-4">
+                      <button className="flex-1 bg-maroon text-white py-3 rounded-xl font-semibold shadow-md shadow-maroon/20 hover:shadow-lg transition-shadow">
+                        Track Today's Delivery
+                      </button>
+                      <button className="px-6 py-3 border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                        Pause Meal
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                    <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Package size={32} className="text-orange-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">No Active Subscription</h3>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">You don't have an active meal plan right now. Browse our verified mess partners to subscribe.</p>
+                    <button 
+                      onClick={() => navigate('/find-mess')}
+                      className="bg-orange-500 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-orange-600 transition-colors"
+                    >
+                      Browse Messes
                     </button>
-                    <div className="secured-badges">
-                      <ShieldCheck size={14} className="text-secondary" /> Secured by Razorpay & UPI
-                    </div>
                   </div>
-                </div>
-
-                {/* Transactions Ledger */}
-                <div className="wallet-transactions-ledger">
-                  <h3>Transaction History</h3>
-                  <div className="transactions-list">
-                    <div className="transaction-item">
-                      <div className="tx-left">
-                        <span className="tx-icon pause-icon"><Pause size={12}/></span>
-                        <div>
-                          <h4>Tiffin Paused: June 6</h4>
-                          <p>Refund Credit (Suvarna Mess)</p>
-                        </div>
-                      </div>
-                      <span className="tx-amount credit">+ ₹73</span>
-                    </div>
-
-                    <div className="transaction-item">
-                      <div className="tx-left">
-                        <span className="tx-icon pause-icon"><Pause size={12}/></span>
-                        <div>
-                          <h4>Tiffin Paused: June 5</h4>
-                          <p>Refund Credit (Suvarna Mess)</p>
-                        </div>
-                      </div>
-                      <span className="tx-amount credit">+ ₹73</span>
-                    </div>
-
-                    <div className="transaction-item">
-                      <div className="tx-left">
-                        <span className="tx-icon promo-icon">🎁</span>
-                        <div>
-                          <h4>Referral Rewards Promo</h4>
-                          <p>Credited code: WELCOME100</p>
-                        </div>
-                      </div>
-                      <span className="tx-amount credit">+ ₹100</span>
-                    </div>
-
-                    <div className="transaction-item">
-                      <div className="tx-left">
-                        <span className="tx-icon sub-icon"><Play size={12}/></span>
-                        <div>
-                          <h4>Subscription Initial Purchase</h4>
-                          <p>UPI reference: TXN8091823</p>
-                        </div>
-                      </div>
-                      <span className="tx-amount debit">- ₹2,199</span>
-                    </div>
-                  </div>
-                </div>
+                )}
               </motion.div>
             )}
 
-            {/* TAB 4: DELIVERY HISTORY */}
+            {/* TAB 2: BILLING HISTORY */}
             {activeTab === 'history' && (
               <motion.div
                 key="history"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
-                className="db-panel-card"
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
               >
-                <h2>Delivery History & Ratings</h2>
-                <p>Track your past tiffin dispatches, rate food flavors, and report quality issues directly to our control desk.</p>
-
-                <div className="history-ledger-list">
-                  <div className="history-item-row">
-                    <div className="hist-meta-left">
-                      <span className="hist-status-icon-ok">✓</span>
-                      <div>
-                        <h4>June 4, 2026 — Delivered</h4>
-                        <p>Tiffin: {currentMess.name} (Veg Thali)</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Billing History</h2>
+                
+                {payments.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No payment history found.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {payments.map(payment => (
+                      <div key={payment.id} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-full ${payment.status === 'paid' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                            <CreditCard size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-800">Subscription Payment</h4>
+                            <p className="text-sm text-gray-500">
+                              {payment.createdAt?.toDate ? payment.createdAt.toDate().toLocaleDateString() : 'Recent'} 
+                              • {payment.razorpayOrderId || 'Simulated Order'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-gray-900">₹{payment.amount}</p>
+                          <span className={`text-xs font-bold uppercase tracking-wider ${payment.status === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
+                            {payment.status}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="hist-actions-right">
-                      <span className="star-display">★★★★★</span>
-                      <button className="btn-hist-action">Report Issue</button>
-                    </div>
+                    ))}
                   </div>
+                )}
+              </motion.div>
+            )}
 
-                  <div className="history-item-row">
-                    <div className="hist-meta-left">
-                      <span className="hist-status-icon-ok">✓</span>
-                      <div>
-                        <h4>June 3, 2026 — Delivered</h4>
-                        <p>Tiffin: {currentMess.name} (Veg Thali)</p>
-                      </div>
-                    </div>
-                    <div className="hist-actions-right">
-                      <div className="add-rating-btn-group">
-                        <button className="rating-star-btn">★</button>
-                        <button className="rating-star-btn">★</button>
-                        <button className="rating-star-btn">★</button>
-                        <button className="rating-star-btn">★</button>
-                        <button className="rating-star-btn">★</button>
-                      </div>
-                      <button className="btn-hist-action">Report Issue</button>
-                    </div>
+            {/* TAB 3: PROFILE */}
+            {activeTab === 'profile' && (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
+              >
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile Settings</h2>
+                <div className="space-y-6 max-w-lg">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Full Name</label>
+                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-maroon/20" value={currentUser?.displayName || ''} readOnly />
                   </div>
-
-                  <div className="history-item-row paused-day">
-                    <div className="hist-meta-left">
-                      <span className="hist-status-icon-paused">II</span>
-                      <div>
-                        <h4>June 2, 2026 — Paused by User</h4>
-                        <p>No delivery dispatched</p>
-                      </div>
-                    </div>
-                    <div className="hist-actions-right">
-                      <span className="refund-credited-badge">₹73 Credited</span>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Phone / Email</label>
+                    <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-maroon/20" value={currentUser?.email || currentUser?.phoneNumber || ''} readOnly />
                   </div>
-
-                  <div className="history-item-row">
-                    <div className="hist-meta-left">
-                      <span className="hist-status-icon-ok">✓</span>
-                      <div>
-                        <h4>June 1, 2026 — Delivered</h4>
-                        <p>Tiffin: {currentMess.name} (Veg Thali)</p>
-                      </div>
-                    </div>
-                    <div className="hist-actions-right">
-                      <span className="star-display">★★★★★</span>
-                      <button className="btn-hist-action">Report Issue</button>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Delivery Address</label>
+                    <textarea className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-maroon/20" rows="3" placeholder="Enter your full delivery address"></textarea>
                   </div>
+                  <button className="bg-maroon text-white px-6 py-3 rounded-xl font-semibold shadow-md">
+                    Save Changes
+                  </button>
                 </div>
               </motion.div>
             )}
 
           </AnimatePresence>
         </div>
-
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ function App() {
                 path="/dashboard" 
                 element={
                   <ProtectedRoute allowedRoles={['customer']}>
-                    <CustomerDashboard />
+                    <UserDashboard />
                   </ProtectedRoute>
                 } 
               />
