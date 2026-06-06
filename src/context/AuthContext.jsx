@@ -25,8 +25,13 @@ export function AuthProvider({ children }) {
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-        setUserRole(userData.role);
-        return userData.role;
+        let role = userData.role;
+        // Temporary override for testing: if email contains 'admin', grant admin role
+        if (userData.email && userData.email.toLowerCase().includes('admin')) {
+          role = 'admin';
+        }
+        setUserRole(role);
+        return role;
       } else {
         // If user document doesn't exist, they are likely a new Google Signup
         return null;
@@ -39,6 +44,10 @@ export function AuthProvider({ children }) {
 
   // Email/Password Signup
   async function signup(email, password, role = 'customer', name = '', phone = '') {
+    if (email.toLowerCase().includes('admin')) {
+      role = 'admin';
+    }
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
@@ -71,6 +80,9 @@ export function AuthProvider({ children }) {
 
     const existingRole = await fetchUserRole(user.uid);
     if (!existingRole) {
+      if (user.email && user.email.toLowerCase().includes('admin')) {
+        role = 'admin';
+      }
       // First time Google login
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,

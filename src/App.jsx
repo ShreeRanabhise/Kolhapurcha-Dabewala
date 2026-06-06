@@ -83,9 +83,7 @@ function App() {
               />
 
               {/* Local Dashboards (from previous UI iteration) */}
-              <Route path="/dashboard/user" element={<UserDashboard />} />
               <Route path="/dashboard/vendor" element={<VendorDashboardLocal />} />
-              <Route path="/dashboard/admin" element={<AdminDashboardLocal />} />
 
               {/* Protected Dashboards (from feature implementation) */}
               <Route 
@@ -108,7 +106,7 @@ function App() {
                 path="/admin/*" 
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
-                    <AdminDashboardFeature />
+                    <AdminDashboardLocal />
                   </ProtectedRoute>
                 } 
               />
